@@ -18,8 +18,9 @@ import { useLanguage } from './i18n/LanguageContext';
 
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import { getVortexApi } from './api';
 
-const getApi = () => window.vortexAPI || window.smasherAPI;
+const getApi = () => getVortexApi();
 
 export const App: React.FC = () => {
   const { t } = useLanguage();
