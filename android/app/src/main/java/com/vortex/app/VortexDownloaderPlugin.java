@@ -11,7 +11,6 @@ import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 import com.yausername.youtubedl_android.YoutubeDLResponse;
 import com.yausername.youtubedl_android.YoutubeDLException;
-import com.yausername.youtubedl_android.FFmpeg;
 import kotlin.Unit;
 
 import java.io.File;
@@ -30,7 +29,6 @@ public class VortexDownloaderPlugin extends Plugin {
             try {
                 if (!isInitialized) {
                     YoutubeDL.getInstance().init(getContext());
-                    FFmpeg.getInstance().init(getContext());
                     isInitialized = true;
                 }
                 JSObject ret = new JSObject();
@@ -38,7 +36,7 @@ public class VortexDownloaderPlugin extends Plugin {
                 ret.put("version", YoutubeDL.getInstance().version(getContext()));
                 call.resolve(ret);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to initialize YoutubeDL / FFmpeg", e);
+                Log.e(TAG, "Failed to initialize YoutubeDL engine", e);
                 call.reject("Initialization error: " + e.getMessage());
             }
         });
@@ -71,7 +69,6 @@ public class VortexDownloaderPlugin extends Plugin {
             try {
                 if (!isInitialized) {
                     YoutubeDL.getInstance().init(getContext());
-                    FFmpeg.getInstance().init(getContext());
                     isInitialized = true;
                 }
 
