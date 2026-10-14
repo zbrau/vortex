@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { DownloadItem, PointOfInterest, SubtitleTrack } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { getVortexApi, isMobileNative } from '../api';
 
 interface VideoPlayerModalProps {
   item: DownloadItem | null;
@@ -33,6 +35,9 @@ interface VideoPlayerModalProps {
 
 export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ item, onClose }) => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const [chapters, setChapters] = useState<PointOfInterest[]>([]);
   const [subtitles, setSubtitles] = useState<SubtitleTrack[]>([]);
@@ -42,12 +47,10 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ item, onClos
   useEffect(() => {
     setHasError(false);
     if (item) {
-      // @ts-ignore
-      if (window.smasherAPI) {
-        // @ts-ignore
-        window.smasherAPI.getPointsOfInterest(item.id).then(setChapters).catch(() => {});
-        // @ts-ignore
-        window.smasherAPI.getSubtitles(item.id).then(setSubtitles).catch(() => {});
+      const api = getVortexApi();
+      if (api) {
+        if (api.getPointsOfInterest) api.getPointsOfInterest(item.id).then(setChapters).catch(() => {});
+        if (api.getSubtitles) api.getSubtitles(item.id).then(setSubtitles).catch(() => {});
       }
     } else {
       setChapters([]);
@@ -75,15 +78,15 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ item, onClos
 
   const handleOpenSystemPlayer = () => {
     if (item.filepath) {
-      // @ts-ignore
-      window.smasherAPI?.openFile(item.filepath);
+      const api = getVortexApi();
+      api?.openFile?.(item.filepath);
     }
   };
 
   const handleOpenFolder = () => {
     if (item.filepath) {
-      // @ts-ignore
-      window.smasherAPI?.openFolder(item.filepath);
+      const api = getVortexApi();
+      api?.openFolder?.(item.filepath);
     }
   };
 
@@ -104,6 +107,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ item, onClos
     <Modal
       opened={!!item}
       onClose={onClose}
+      fullScreen={isMobile}
       title={
         <Group justify="space-between" align="center" style={{ width: '100%' }} pr="md">
           <Group gap="xs" align="center" style={{ flex: 1, minWidth: 0 }}>
@@ -111,30 +115,44 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ item, onClos
             <Text fw={700} lineClamp={1}>{item.title}</Text>
           </Group>
           <Group gap="xs" align="center">
-            <Button
-              size="xs"
-              variant="light"
-              color="pink"
-              leftSection={<ExternalLink size={14} />}
-              onClick={handleOpenSystemPlayer}
-            >
-              Abrir con Reproductor del Sistema
-            </Button>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              title="Mostrar en carpeta"
-              onClick={handleOpenFolder}
-            >
-              <FolderOpen size={16} />
-            </ActionIcon>
+            {!isMobile ? (
+              <Button
+                size="xs"
+                variant="light"
+                color="pink"
+                leftSection={<ExternalLink size={14} />}
+                onClick={handleOpenSystemPlayer}
+              >
+                Abrir con Reproductor del Sistema
+              </Button>
+            ) : (
+              <ActionIcon
+                size="md"
+                variant="light"
+                color="pink"
+                onClick={handleOpenSystemPlayer}
+                title="Reproductor externo"
+              >
+                <ExternalLink size={16} />
+              </ActionIcon>
+            )}
+            {!isMobile && (
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                title="Mostrar en carpeta"
+                onClick={handleOpenFolder}
+              >
+                <FolderOpen size={16} />
+              </ActionIcon>
+            )}
           </Group>
         </Group>
       }
-      size="85%"
-      radius="lg"
-      styles={{ body: { padding: 16 } }}
+      size="xl"
+      radius={isMobile ? 0 : 'lg'}
+      styles={{ body: { padding: isMobile ? 8 : 16 } }}
     >
       <Stack gap="md">
         {(hasError || isMkv) && (

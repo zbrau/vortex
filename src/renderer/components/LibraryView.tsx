@@ -37,6 +37,8 @@ import {
 } from 'lucide-react';
 import { DownloadItem, Category } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { isMobileNative } from '../api';
 
 interface LibraryViewProps {
   items: DownloadItem[];
@@ -58,6 +60,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   onRefetchMeta
 }) => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [typeFilter, setTypeFilter] = useState<'all' | 'video' | 'audio'>('all');
@@ -153,7 +158,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
 
       {/* Main Filter & Search Bar */}
       <Paper
-        p="md"
+        p={isMobile ? 'sm' : 'md'}
         radius="lg"
         style={{
           background: 'rgba(255,255,255,0.03)',
@@ -161,82 +166,157 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         }}
       >
         <Stack gap="sm">
-          <Group justify="space-between" align="center" wrap="wrap">
-            <TextInput
-              placeholder={t('library.searchPlaceholder')}
-              leftSection={<Search size={16} />}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              size="sm"
-              radius="md"
-              style={{ flex: 1, minWidth: 240 }}
-            />
-
-            {/* Media Type Filter Tabs */}
-            <SegmentedControl
-              value={typeFilter}
-              onChange={v => setTypeFilter(v as any)}
-              size="xs"
-              radius="md"
-              data={[
-                { value: 'all', label: `${t('library.filterAll')} (${items.length})` },
-                { value: 'video', label: `${t('library.filterVideo')} (${videoCount})` },
-                { value: 'audio', label: `${t('library.filterAudio')} (${audioCount})` }
-              ]}
-            />
-
-            {/* Sort Dropdown */}
-            <Select
-              size="xs"
-              value={sortBy}
-              onChange={v => setSortBy(v || 'newest')}
-              leftSection={<ArrowUpDown size={14} />}
-              style={{ width: 170 }}
-              radius="md"
-              data={[
-                { value: 'newest', label: t('library.sortNewest') },
-                { value: 'oldest', label: t('library.sortOldest') },
-                { value: 'name', label: t('library.sortName') },
-                { value: 'size', label: t('library.sortSize') },
-                { value: 'duration', label: t('library.sortDuration') },
-              ]}
-            />
-
-            {/* View Mode Toggle: Grid vs List */}
-            <Group gap={4}>
-              <ActionIcon
-                variant={viewMode === 'grid' ? 'filled' : 'subtle'}
-                color={viewMode === 'grid' ? 'pink' : 'gray'}
-                size="md"
+          {isMobile ? (
+            <Stack gap="xs">
+              <TextInput
+                placeholder={t('library.searchPlaceholder')}
+                leftSection={<Search size={16} />}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                size="sm"
                 radius="md"
-                onClick={() => setViewMode('grid')}
-                title="Vista en Cuadrícula"
-              >
-                <LayoutGrid size={16} />
-              </ActionIcon>
-              <ActionIcon
-                variant={viewMode === 'list' ? 'filled' : 'subtle'}
-                color={viewMode === 'list' ? 'pink' : 'gray'}
-                size="md"
+              />
+
+              <SegmentedControl
+                fullWidth
+                value={typeFilter}
+                onChange={v => setTypeFilter(v as any)}
+                size="xs"
                 radius="md"
-                onClick={() => setViewMode('list')}
-                title="Vista en Lista Detallada"
-              >
-                <List size={16} />
-              </ActionIcon>
+                data={[
+                  { value: 'all', label: `${t('library.filterAll')} (${items.length})` },
+                  { value: 'video', label: `${t('library.filterVideo')} (${videoCount})` },
+                  { value: 'audio', label: `${t('library.filterAudio')} (${audioCount})` }
+                ]}
+              />
+
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Select
+                  size="xs"
+                  value={sortBy}
+                  onChange={v => setSortBy(v || 'newest')}
+                  leftSection={<ArrowUpDown size={14} />}
+                  style={{ flex: 1 }}
+                  radius="md"
+                  data={[
+                    { value: 'newest', label: t('library.sortNewest') },
+                    { value: 'oldest', label: t('library.sortOldest') },
+                    { value: 'name', label: t('library.sortName') },
+                    { value: 'size', label: t('library.sortSize') },
+                    { value: 'duration', label: t('library.sortDuration') },
+                  ]}
+                />
+
+                <Group gap={4}>
+                  <ActionIcon
+                    variant={viewMode === 'grid' ? 'filled' : 'subtle'}
+                    color={viewMode === 'grid' ? 'pink' : 'gray'}
+                    size="md"
+                    radius="md"
+                    onClick={() => setViewMode('grid')}
+                    title="Vista en Cuadrícula"
+                  >
+                    <LayoutGrid size={16} />
+                  </ActionIcon>
+                  <ActionIcon
+                    variant={viewMode === 'list' ? 'filled' : 'subtle'}
+                    color={viewMode === 'list' ? 'pink' : 'gray'}
+                    size="md"
+                    radius="md"
+                    onClick={() => setViewMode('list')}
+                    title="Vista en Lista Detallada"
+                  >
+                    <List size={16} />
+                  </ActionIcon>
+                </Group>
+              </Group>
+            </Stack>
+          ) : (
+            <Group justify="space-between" align="center" wrap="wrap">
+              <TextInput
+                placeholder={t('library.searchPlaceholder')}
+                leftSection={<Search size={16} />}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                size="sm"
+                radius="md"
+                style={{ flex: 1, minWidth: 240 }}
+              />
+
+              <SegmentedControl
+                value={typeFilter}
+                onChange={v => setTypeFilter(v as any)}
+                size="xs"
+                radius="md"
+                data={[
+                  { value: 'all', label: `${t('library.filterAll')} (${items.length})` },
+                  { value: 'video', label: `${t('library.filterVideo')} (${videoCount})` },
+                  { value: 'audio', label: `${t('library.filterAudio')} (${audioCount})` }
+                ]}
+              />
+
+              <Select
+                size="xs"
+                value={sortBy}
+                onChange={v => setSortBy(v || 'newest')}
+                leftSection={<ArrowUpDown size={14} />}
+                style={{ width: 170 }}
+                radius="md"
+                data={[
+                  { value: 'newest', label: t('library.sortNewest') },
+                  { value: 'oldest', label: t('library.sortOldest') },
+                  { value: 'name', label: t('library.sortName') },
+                  { value: 'size', label: t('library.sortSize') },
+                  { value: 'duration', label: t('library.sortDuration') },
+                ]}
+              />
+
+              <Group gap={4}>
+                <ActionIcon
+                  variant={viewMode === 'grid' ? 'filled' : 'subtle'}
+                  color={viewMode === 'grid' ? 'pink' : 'gray'}
+                  size="md"
+                  radius="md"
+                  onClick={() => setViewMode('grid')}
+                  title="Vista en Cuadrícula"
+                >
+                  <LayoutGrid size={16} />
+                </ActionIcon>
+                <ActionIcon
+                  variant={viewMode === 'list' ? 'filled' : 'subtle'}
+                  color={viewMode === 'list' ? 'pink' : 'gray'}
+                  size="md"
+                  radius="md"
+                  onClick={() => setViewMode('list')}
+                  title="Vista en Lista Detallada"
+                >
+                  <List size={16} />
+                </ActionIcon>
+              </Group>
             </Group>
-          </Group>
+          )}
 
           {/* Category Filter Pills */}
-          <Group gap="xs" wrap="wrap">
+          <Box
+            style={{
+              display: 'flex',
+              gap: 8,
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              paddingBottom: 4,
+              msOverflowStyle: 'none',
+              scrollbarWidth: 'none'
+            }}
+          >
             <Button
               size="xs"
               variant={selectedCategory === null ? 'filled' : 'subtle'}
               color="gray"
-              radius="md"
+              radius="xl"
+              style={{ flexShrink: 0 }}
               onClick={() => setSelectedCategory(null)}
             >
-              Todas las Categorías
+              Todas
             </Button>
             {categories.map(cat => (
               <Button
@@ -244,13 +324,14 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                 size="xs"
                 variant={selectedCategory === cat.id ? 'filled' : 'subtle'}
                 color="pink"
-                radius="md"
+                radius="xl"
+                style={{ flexShrink: 0 }}
                 onClick={() => setSelectedCategory(cat.id)}
               >
                 {cat.name}
               </Button>
             ))}
-          </Group>
+          </Box>
         </Stack>
       </Paper>
 

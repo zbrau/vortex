@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { DownloadItem } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { getVortexApi, isMobileNative } from '../api';
 
 interface MiniPlayerBarProps {
   item: DownloadItem | null;
@@ -41,6 +43,9 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
   accentColor = '#ff2a85'
 }) => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -127,8 +132,8 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
 
   const handleOpenExternal = () => {
     if (item.filepath) {
-      // @ts-ignore
-      window.smasherAPI?.openFile(item.filepath);
+      const api = getVortexApi();
+      api?.openFile?.(item.filepath);
     }
   };
 
@@ -136,14 +141,14 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
     <Box
       style={{
         position: 'fixed',
-        bottom: 0,
+        bottom: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 58px)' : 0,
         left: 0,
         right: 0,
-        zIndex: 999,
-        padding: '8px 16px',
-        background: 'rgba(12, 10, 20, 0.92)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        zIndex: 89,
+        padding: isMobile ? '6px 12px' : '8px 16px',
+        background: 'rgba(12, 10, 20, 0.95)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         transform: 'translateZ(0)',
         borderTop: `1px solid ${accentColor}40`,
         boxShadow: `0 -10px 40px rgba(0,0,0,0.6)`,
@@ -183,12 +188,12 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
 
       <Group justify="space-between" align="center" wrap="nowrap">
         {/* Left: Media Info */}
-        <Group gap="sm" wrap="nowrap" style={{ minWidth: 240, maxWidth: 360, flex: 1 }}>
+        <Group gap="sm" wrap="nowrap" style={{ minWidth: isMobile ? 120 : 240, maxWidth: isMobile ? 190 : 360, flex: 1 }}>
           <Box
             style={{
               position: 'relative',
-              width: 48,
-              height: 48,
+              width: isMobile ? 40 : 48,
+              height: isMobile ? 40 : 48,
               borderRadius: 8,
               overflow: 'hidden',
               flexShrink: 0,
@@ -196,7 +201,7 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
             }}
           >
             {item.thumbnail_url ? (
-              <Image src={item.thumbnail_url} width={48} height={48} fit="cover" />
+              <Image src={item.thumbnail_url} width={isMobile ? 40 : 48} height={isMobile ? 40 : 48} fit="cover" />
             ) : (
               <Box
                 style={{
@@ -208,21 +213,20 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
                   justifyContent: 'center'
                 }}
               >
-                {isVideo ? <Film size={20} color={accentColor} /> : <Music size={20} color={accentColor} />}
+                {isVideo ? <Film size={18} color={accentColor} /> : <Music size={18} color={accentColor} />}
               </Box>
             )}
           </Box>
 
-          <Box style={{ overflow: 'hidden' }}>
-            <Text fw={700} size="sm" lineClamp={1} title={item.title}>
+          <Box style={{ overflow: 'hidden', minWidth: 0 }}>
+            <Text fw={700} size={isMobile ? 'xs' : 'sm'} lineClamp={1} title={item.title}>
               {item.title}
             </Text>
-            <Group gap={6} mt={2}>
-              <Badge size="xs" variant="light" color="pink">
+            <Group gap={6} mt={2} wrap="nowrap">
+              <Badge size="xs" variant="light" color="pink" style={{ height: 16, fontSize: 9 }}>
                 {item.format.toUpperCase()}
               </Badge>
-              {item.resolution && <Badge size="xs" color="gray" variant="light">{item.resolution}</Badge>}
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="dimmed" style={{ fontSize: 10 }}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </Text>
             </Group>
@@ -283,25 +287,27 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
         </Group>
 
         {/* Right: Volume & Extra Actions */}
-        <Group gap="sm" align="center" wrap="nowrap" style={{ minWidth: 220, justifyContent: 'flex-end' }}>
-          <Group gap={6} align="center" wrap="nowrap" style={{ width: 120 }}>
-            <ActionIcon variant="subtle" color="gray" size="sm" onClick={toggleMute}>
-              {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            </ActionIcon>
-            <Slider
-              value={isMuted ? 0 : volume}
-              min={0}
-              max={1}
-              step={0.05}
-              onChange={handleVolumeChange}
-              size="xs"
-              color="pink"
-              styles={{
-                root: { flex: 1 },
-                track: { background: 'rgba(255,255,255,0.1)' }
-              }}
-            />
-          </Group>
+        <Group gap={isMobile ? 4 : 'sm'} align="center" wrap="nowrap" style={{ minWidth: isMobile ? 'auto' : 220, justifyContent: 'flex-end' }}>
+          {!isMobile && (
+            <Group gap={6} align="center" wrap="nowrap" style={{ width: 120 }}>
+              <ActionIcon variant="subtle" color="gray" size="sm" onClick={toggleMute}>
+                {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              </ActionIcon>
+              <Slider
+                value={isMuted ? 0 : volume}
+                min={0}
+                max={1}
+                step={0.05}
+                onChange={handleVolumeChange}
+                size="xs"
+                color="pink"
+                styles={{
+                  root: { flex: 1 },
+                  track: { background: 'rgba(255,255,255,0.1)' }
+                }}
+              />
+            </Group>
+          )}
 
           {isVideo && (
             <Tooltip label={t('player.expand')}>
@@ -309,23 +315,25 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
                 variant="light"
                 color="pink"
                 radius="md"
-                size="md"
+                size={isMobile ? 'sm' : 'md'}
                 onClick={() => onExpandToVideo(item, currentTime)}
               >
-                <Maximize2 size={16} />
+                <Maximize2 size={isMobile ? 14 : 16} />
               </ActionIcon>
             </Tooltip>
           )}
 
-          <Tooltip label="App Externa">
-            <ActionIcon variant="subtle" color="gray" radius="md" size="md" onClick={handleOpenExternal}>
-              <ExternalLink size={16} />
-            </ActionIcon>
-          </Tooltip>
+          {!isMobile && (
+            <Tooltip label="App Externa">
+              <ActionIcon variant="subtle" color="gray" radius="md" size="md" onClick={handleOpenExternal}>
+                <ExternalLink size={16} />
+              </ActionIcon>
+            </Tooltip>
+          )}
 
           <Tooltip label={t('player.close')}>
-            <ActionIcon variant="subtle" color="gray" radius="md" size="md" onClick={onClose}>
-              <X size={16} />
+            <ActionIcon variant="subtle" color="gray" radius="md" size={isMobile ? 'sm' : 'md'} onClick={onClose}>
+              <X size={isMobile ? 14 : 16} />
             </ActionIcon>
           </Tooltip>
         </Group>

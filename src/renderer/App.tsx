@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { MantineProvider, Container, Box } from '@mantine/core';
+import { MantineProvider, Container, Box, Paper, Group, UnstyledButton, Text, Badge } from '@mantine/core';
 import { Notifications, notifications } from '@mantine/notifications';
+import { useMediaQuery } from '@mantine/hooks';
+import { Download, Library, QrCode, Settings } from 'lucide-react';
 import { buildCustomTheme, themes } from './theme/themes';
 import { ThemePreset, DownloadItem, DownloadOptions, DownloadProgress, Category, SystemBinariesStatus } from './types';
 import { Navbar } from './components/Navbar';
@@ -18,12 +20,14 @@ import { useLanguage } from './i18n/LanguageContext';
 
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-import { getVortexApi } from './api';
+import { getVortexApi, isMobileNative } from './api';
 
 const getApi = () => getVortexApi();
 
 export const App: React.FC = () => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
   const [currentTheme, setCurrentTheme] = useState<ThemePreset>(() => {
     return (localStorage.getItem('vortex_theme') as ThemePreset) ||
            (localStorage.getItem('smasher_theme') as ThemePreset) ||
@@ -253,7 +257,7 @@ export const App: React.FC = () => {
           background: `radial-gradient(ellipse 70% 35% at 50% -5%, ${effectiveAccent}18, transparent 70%), ${activeThemeConfig.bg}`,
           minHeight: '100vh',
           color: '#fff',
-          paddingBottom: miniPlayerItem ? 85 : 0
+          paddingBottom: isMobile ? (miniPlayerItem ? 150 : 80) : (miniPlayerItem ? 85 : 0)
         }}
       >
         <Navbar
@@ -268,7 +272,7 @@ export const App: React.FC = () => {
           itemCount={libraryItems.length}
         />
 
-        <Container size="xl" py="lg">
+        <Container size="xl" px={isMobile ? 'xs' : 'md'} py={isMobile ? 'xs' : 'lg'}>
           {activeTab === 'download' && (
             <>
               <DownloadBar
@@ -303,6 +307,137 @@ export const App: React.FC = () => {
           onExpandToVideo={handleExpandToVideo}
           accentColor={effectiveAccent}
         />
+
+        {/* Fixed Mobile Bottom Navigation Bar */}
+        {isMobile && (
+          <Paper
+            component="nav"
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 90,
+              background: 'rgba(10, 8, 16, 0.94)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(255,255,255,0.08)',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8
+            }}
+          >
+            <Group justify="space-around" align="center" wrap="nowrap">
+              {/* 1. Descargas */}
+              <UnstyledButton
+                onClick={() => setActiveTab('download')}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '6px 12px',
+                  borderRadius: 12,
+                  color: activeTab === 'download' ? '#ff2a85' : 'rgba(255,255,255,0.5)',
+                  background: activeTab === 'download' ? 'rgba(255,42,133,0.12)' : 'transparent',
+                  transition: 'all 0.2s ease',
+                  minWidth: 64
+                }}
+              >
+                <Download size={21} strokeWidth={activeTab === 'download' ? 2.5 : 2} />
+                <Text size="11px" fw={activeTab === 'download' ? 700 : 500}>
+                  {t('nav.download')}
+                </Text>
+              </UnstyledButton>
+
+              {/* 2. Biblioteca */}
+              <UnstyledButton
+                onClick={() => setActiveTab('library')}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '6px 12px',
+                  borderRadius: 12,
+                  color: activeTab === 'library' ? '#00e5ff' : 'rgba(255,255,255,0.5)',
+                  background: activeTab === 'library' ? 'rgba(0,229,255,0.12)' : 'transparent',
+                  transition: 'all 0.2s ease',
+                  minWidth: 64,
+                  position: 'relative'
+                }}
+              >
+                <Box style={{ position: 'relative' }}>
+                  <Library size={21} strokeWidth={activeTab === 'library' ? 2.5 : 2} />
+                  {libraryItems.length > 0 && (
+                    <Badge
+                      size="xs"
+                      circle
+                      color="pink"
+                      style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: -10,
+                        fontSize: 9,
+                        fontWeight: 800,
+                        minWidth: 16,
+                        height: 16
+                      }}
+                    >
+                      {libraryItems.length}
+                    </Badge>
+                  )}
+                </Box>
+                <Text size="11px" fw={activeTab === 'library' ? 700 : 500}>
+                  {t('nav.library')}
+                </Text>
+              </UnstyledButton>
+
+              {/* 3. Transferir QR */}
+              <UnstyledButton
+                onClick={() => setQrShareOpened(true)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '6px 12px',
+                  borderRadius: 12,
+                  color: 'rgba(255,255,255,0.55)',
+                  transition: 'all 0.2s ease',
+                  minWidth: 64
+                }}
+              >
+                <QrCode size={21} strokeWidth={2} />
+                <Text size="11px" fw={500}>
+                  QR Share
+                </Text>
+              </UnstyledButton>
+
+              {/* 4. Ajustes */}
+              <UnstyledButton
+                onClick={() => setSettingsOpened(true)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '6px 12px',
+                  borderRadius: 12,
+                  color: 'rgba(255,255,255,0.55)',
+                  transition: 'all 0.2s ease',
+                  minWidth: 64
+                }}
+              >
+                <Settings size={21} strokeWidth={2} />
+                <Text size="11px" fw={500}>
+                  {t('nav.settings')}
+                </Text>
+              </UnstyledButton>
+            </Group>
+          </Paper>
+        )}
 
         {/* Global Command Palette (Ctrl+K) */}
         <CommandPaletteModal

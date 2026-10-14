@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { QrServerStatus } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { getVortexApi, isMobileNative } from '../api';
 
 interface QrShareModalProps {
   opened: boolean;
@@ -33,6 +35,9 @@ interface QrShareModalProps {
 
 export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const [status, setStatus] = useState<QrServerStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -42,10 +47,9 @@ export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) =
   const handleFixFirewall = async () => {
     setConfiguringFirewall(true);
     try {
-      // @ts-ignore
-      if (window.smasherAPI) {
-        // @ts-ignore
-        const ok = await window.smasherAPI.configureFirewallAndNetwork();
+      const api = getVortexApi();
+      if (api?.configureFirewallAndNetwork) {
+        const ok = await api.configureFirewallAndNetwork();
         if (ok) setFirewallSuccess(true);
       }
     } catch (e) {
@@ -56,10 +60,9 @@ export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) =
   };
 
   const loadStatus = async () => {
-    // @ts-ignore
-    if (window.smasherAPI) {
-      // @ts-ignore
-      const s = await window.smasherAPI.getQrServerStatus();
+    const api = getVortexApi();
+    if (api?.getQrServerStatus) {
+      const s = await api.getQrServerStatus();
       setStatus(s);
     }
   };
@@ -72,15 +75,13 @@ export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) =
 
   const handleToggle = async (checked: boolean) => {
     setLoading(true);
-    // @ts-ignore
-    if (window.smasherAPI) {
-      if (checked) {
-        // @ts-ignore
-        const s = await window.smasherAPI.startQrServer();
+    const api = getVortexApi();
+    if (api) {
+      if (checked && api.startQrServer) {
+        const s = await api.startQrServer();
         setStatus(s);
-      } else {
-        // @ts-ignore
-        const s = await window.smasherAPI.stopQrServer();
+      } else if (!checked && api.stopQrServer) {
+        const s = await api.stopQrServer();
         setStatus(s);
       }
     }
@@ -99,6 +100,7 @@ export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) =
     <Modal
       opened={opened}
       onClose={onClose}
+      fullScreen={isMobile}
       title={
         <Group gap="xs">
           <QrCode size={20} color="#ff2a85" />
@@ -106,7 +108,7 @@ export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) =
         </Group>
       }
       size="md"
-      radius="lg"
+      radius={isMobile ? 0 : 'lg'}
     >
       <Stack gap="md">
         <Paper p="sm" radius="md" style={{ background: 'rgba(255,255,255,0.03)' }}>

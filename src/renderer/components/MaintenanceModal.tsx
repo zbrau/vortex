@@ -18,6 +18,8 @@ import {
   Check
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { getVortexApi, isMobileNative } from '../api';
 
 interface MaintenanceModalProps {
   opened: boolean;
@@ -31,6 +33,9 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   onRefreshLibrary
 }) => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const [loadingReconcile, setLoadingReconcile] = useState(false);
   const [loadingBackup, setLoadingBackup] = useState(false);
   const [loadingRestore, setLoadingRestore] = useState(false);
@@ -38,13 +43,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   const handleReconcile = async () => {
     setLoadingReconcile(true);
     try {
-      // @ts-ignore
-      if (window.smasherAPI) {
-        // @ts-ignore
-        const res = await window.smasherAPI.reconcileLibrary();
+      const api = getVortexApi();
+      if (api?.reconcileLibrary) {
+        const res = await api.reconcileLibrary();
         notifications.show({
           title: 'Reconciliación Completada',
-          message: `Se reconectaron ${res.reconciledCount} archivos de ${res.checkedCount} revisados.`,
+          message: `Se reconectaron ${res.reconciledCount || 0} archivos de ${res.checkedCount || 0} revisados.`,
           color: 'teal',
           icon: <Check size={16} />
         });
@@ -64,10 +68,9 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   const handleBackup = async () => {
     setLoadingBackup(true);
     try {
-      // @ts-ignore
-      if (window.smasherAPI) {
-        // @ts-ignore
-        const savedPath = await window.smasherAPI.backupDatabase();
+      const api = getVortexApi();
+      if (api?.backupDatabase) {
+        const savedPath = await api.backupDatabase();
         if (savedPath) {
           notifications.show({
             title: 'Copia de Seguridad Creada',
@@ -90,14 +93,13 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   const handleRestore = async () => {
     setLoadingRestore(true);
     try {
-      // @ts-ignore
-      if (window.smasherAPI) {
-        // @ts-ignore
-        const res = await window.smasherAPI.restoreDatabase();
+      const api = getVortexApi();
+      if (api?.restoreDatabase) {
+        const res = await api.restoreDatabase();
         if (res) {
           notifications.show({
             title: 'Base de Datos Restaurada',
-            message: `Se restauraron ${res.restoredItems} elementos y ${res.restoredCategories} categorías.`,
+            message: `Se restauraron ${res.restoredItems || 0} elementos y ${res.restoredCategories || 0} categorías.`,
             color: 'teal'
           });
           onRefreshLibrary();
@@ -118,6 +120,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     <Modal
       opened={opened}
       onClose={onClose}
+      fullScreen={isMobile}
       title={
         <Group gap="xs">
           <Wrench size={20} color="#ff2a85" />
@@ -125,7 +128,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         </Group>
       }
       size="md"
-      radius="lg"
+      radius={isMobile ? 0 : 'lg'}
     >
       <Stack gap="md">
         {/* Reconcile Section */}

@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { SystemBinariesStatus, BootstrapProgress } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { getVortexApi, isMobileNative } from '../api';
 
 interface FirstRunSetupModalProps {
   opened: boolean;
@@ -40,6 +42,9 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
   accentColor = '#00e5ff'
 }) => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const [isInstalling, setIsInstalling] = useState(false);
   const [progress, setProgress] = useState<BootstrapProgress>({
     step: 'idle',
@@ -50,7 +55,7 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const api = window.vortexAPI || window.smasherAPI;
+    const api = getVortexApi();
     if (api?.onBootstrapProgress) {
       const unsub = api.onBootstrapProgress((p: BootstrapProgress) => {
         setProgress(p);
@@ -77,7 +82,7 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
       message: 'Iniciando descarga de dependencias oficiales...'
     });
 
-    const api = window.vortexAPI || window.smasherAPI;
+    const api = getVortexApi();
     if (api?.installBinaries) {
       try {
         await api.installBinaries();
@@ -101,8 +106,9 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
       closeOnClickOutside={!isInstalling}
       closeOnEscape={!isInstalling}
       withCloseButton={!isInstalling}
+      fullScreen={isMobile}
       size="md"
-      radius="lg"
+      radius={isMobile ? 0 : 'lg'}
       centered
       title={
         <Group gap="xs" align="center">

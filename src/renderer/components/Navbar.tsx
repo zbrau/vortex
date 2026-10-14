@@ -23,8 +23,10 @@ import {
   Languages,
   Check
 } from 'lucide-react';
+import { useMediaQuery } from '@mantine/hooks';
 import { SystemBinariesStatus } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
+import { isMobileNative } from '../api';
 
 interface NavbarProps {
   activeTab: string;
@@ -50,97 +52,118 @@ export const Navbar: React.FC<NavbarProps> = ({
   itemCount
 }) => {
   const { language, setLanguage, t, languages } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
 
   return (
     <Group
       justify="space-between"
       align="center"
-      px="xl"
-      py="sm"
+      px={isMobile ? 'md' : 'xl'}
+      py={isMobile ? 'xs' : 'sm'}
       wrap="nowrap"
       style={{
         borderBottom: '1px solid rgba(255,255,255,0.08)',
-        background: 'rgba(10, 8, 16, 0.75)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        background: 'rgba(10, 8, 16, 0.85)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         transform: 'translateZ(0)',
-        minHeight: 64,
+        minHeight: isMobile ? 54 : 64,
+        paddingTop: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 8px)' : undefined,
         position: 'sticky',
         top: 0,
         zIndex: 50
       }}
     >
       {/* Brand Title */}
-      <Title
-        order={3}
-        style={{
-          letterSpacing: '2.5px',
-          fontWeight: 900,
-          margin: 0,
-          lineHeight: 1,
-          background: 'linear-gradient(135deg, #ffffff 40%, #00e5ff 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          userSelect: 'none',
-          cursor: 'default'
-        }}
-      >
-        VORTEX
-      </Title>
-
-      {/* Main Navigation Tabs */}
-      <SegmentedControl
-        value={activeTab}
-        onChange={setActiveTab}
-        size="sm"
-        radius="md"
-        style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.08)'
-        }}
-        data={[
-          {
-            value: 'download',
-            label: (
-              <Group gap={8} wrap="nowrap" align="center" px={12} py={4}>
-                <Download size={16} strokeWidth={2.2} />
-                <Text size="sm" fw={600} style={{ whiteSpace: 'nowrap' }}>
-                  {t('nav.download')}
-                </Text>
-              </Group>
-            )
-          },
-          {
-            value: 'library',
-            label: (
-              <Group gap={8} wrap="nowrap" align="center" px={12} py={4}>
-                <Library size={16} strokeWidth={2.2} />
-                <Text size="sm" fw={600} style={{ whiteSpace: 'nowrap' }}>
-                  {t('nav.library')} {itemCount > 0 && `(${itemCount})`}
-                </Text>
-              </Group>
-            )
-          }
-        ]}
-      />
-
-      {/* Quick Search & Tools */}
       <Group gap="xs" align="center" wrap="nowrap">
-        <Button
-          size="xs"
-          variant="subtle"
-          color="gray"
-          radius="md"
-          leftSection={<Search size={14} />}
-          rightSection={<Kbd size="xs" style={{ fontSize: 10 }}>Ctrl+K</Kbd>}
-          onClick={onOpenCommandPalette}
+        <Title
+          order={3}
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.06)'
+            letterSpacing: isMobile ? '2px' : '2.5px',
+            fontWeight: 900,
+            fontSize: isMobile ? 20 : undefined,
+            margin: 0,
+            lineHeight: 1,
+            background: 'linear-gradient(135deg, #ffffff 40%, #00e5ff 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            userSelect: 'none',
+            cursor: 'default'
           }}
         >
-          {t('nav.search')}
-        </Button>
+          VORTEX
+        </Title>
+        {isMobile && binaryStatus && (
+          <Badge
+            size="xs"
+            variant="dot"
+            color={binaryStatus.ready ? 'teal' : 'yellow'}
+            style={{ cursor: !binaryStatus.ready ? 'pointer' : 'default', padding: '0 6px', fontSize: 10 }}
+            onClick={!binaryStatus.ready || binaryStatus.needsBootstrap ? onOpenSetup : undefined}
+          >
+            {binaryStatus.ready ? 'Ready' : 'Setup'}
+          </Badge>
+        )}
+      </Group>
+
+      {/* Main Navigation Tabs - Desktop Only (Mobile uses BottomNav) */}
+      {!isMobile && (
+        <SegmentedControl
+          value={activeTab}
+          onChange={setActiveTab}
+          size="sm"
+          radius="md"
+          style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)'
+          }}
+          data={[
+            {
+              value: 'download',
+              label: (
+                <Group gap={8} wrap="nowrap" align="center" px={12} py={4}>
+                  <Download size={16} strokeWidth={2.2} />
+                  <Text size="sm" fw={600} style={{ whiteSpace: 'nowrap' }}>
+                    {t('nav.download')}
+                  </Text>
+                </Group>
+              )
+            },
+            {
+              value: 'library',
+              label: (
+                <Group gap={8} wrap="nowrap" align="center" px={12} py={4}>
+                  <Library size={16} strokeWidth={2.2} />
+                  <Text size="sm" fw={600} style={{ whiteSpace: 'nowrap' }}>
+                    {t('nav.library')} {itemCount > 0 && `(${itemCount})`}
+                  </Text>
+                </Group>
+              )
+            }
+          ]}
+        />
+      )}
+
+      {/* Quick Search & Tools */}
+      <Group gap={isMobile ? 6 : 'xs'} align="center" wrap="nowrap">
+        {!isMobile && (
+          <Button
+            size="xs"
+            variant="subtle"
+            color="gray"
+            radius="md"
+            leftSection={<Search size={14} />}
+            rightSection={<Kbd size="xs" style={{ fontSize: 10 }}>Ctrl+K</Kbd>}
+            onClick={onOpenCommandPalette}
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.06)'
+            }}
+          >
+            {t('nav.search')}
+          </Button>
+        )}
 
         {/* Language Selector Dropdown (Zero Emojis, Pure SVG & Typography) */}
         <Menu shadow="md" width={180} position="bottom-end" radius="md">
@@ -196,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </Menu.Dropdown>
         </Menu>
 
-        {binaryStatus && (
+        {!isMobile && binaryStatus && (
           <Tooltip label={binaryStatus.ready ? t('nav.engineTooltipReady') : t('nav.engineTooltipNotReady')}>
             <Badge
               leftSection={
@@ -224,39 +247,41 @@ export const Navbar: React.FC<NavbarProps> = ({
         <Tooltip label={t('nav.qrShare')}>
           <ActionIcon
             variant="subtle"
-            size="lg"
+            size={isMobile ? 'md' : 'lg'}
             radius="md"
             onClick={onOpenQrShare}
             color="pink"
             aria-label={t('nav.qrShare')}
           >
-            <QrCode size={19} strokeWidth={2} />
+            <QrCode size={isMobile ? 18 : 19} strokeWidth={2} />
           </ActionIcon>
         </Tooltip>
 
-        <Tooltip label={t('nav.maintenance')}>
-          <ActionIcon
-            variant="subtle"
-            size="lg"
-            radius="md"
-            onClick={onOpenMaintenance}
-            color="gray"
-            aria-label={t('nav.maintenance')}
-          >
-            <Wrench size={19} strokeWidth={2} />
-          </ActionIcon>
-        </Tooltip>
+        {!isMobile && (
+          <Tooltip label={t('nav.maintenance')}>
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              radius="md"
+              onClick={onOpenMaintenance}
+              color="gray"
+              aria-label={t('nav.maintenance')}
+            >
+              <Wrench size={19} strokeWidth={2} />
+            </ActionIcon>
+          </Tooltip>
+        )}
 
         <Tooltip label={t('nav.settings')}>
           <ActionIcon
             variant="subtle"
-            size="lg"
+            size={isMobile ? 'md' : 'lg'}
             radius="md"
             onClick={onOpenSettings}
             color="gray"
             aria-label={t('nav.settings')}
           >
-            <Settings size={19} strokeWidth={2} />
+            <Settings size={isMobile ? 18 : 19} strokeWidth={2} />
           </ActionIcon>
         </Tooltip>
       </Group>

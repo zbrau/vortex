@@ -27,6 +27,8 @@ import {
 import { DownloadItem, ThemePreset } from '../types';
 import { themes } from '../theme/themes';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { isMobileNative } from '../api';
 
 interface CommandPaletteModalProps {
   opened: boolean;
@@ -52,6 +54,9 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onOpenMaintenance
 }) => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const [query, setQuery] = useState('');
 
   const filteredItems = libraryItems.filter(item =>
@@ -72,8 +77,9 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     <Modal
       opened={opened}
       onClose={onClose}
+      fullScreen={isMobile}
       size="lg"
-      radius="lg"
+      radius={isMobile ? 0 : 'lg'}
       padding="md"
       withCloseButton={false}
       styles={{

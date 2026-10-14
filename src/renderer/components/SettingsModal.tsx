@@ -24,6 +24,8 @@ import {
 import { ThemePreset, SystemBinariesStatus, Category } from '../types';
 import { themes } from '../theme/themes';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { isMobileNative } from '../api';
 
 interface SettingsModalProps {
   opened: boolean;
@@ -51,6 +53,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenSetup
 }) => {
   const { language, setLanguage, t, languages } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#ff2a85');
 
@@ -66,6 +71,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     <Modal
       opened={opened}
       onClose={onClose}
+      fullScreen={isMobile}
       title={
         <Group gap="xs">
           <Palette size={20} color="#ff2a85" />
@@ -73,7 +79,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </Group>
       }
       size="lg"
-      radius="lg"
+      radius={isMobile ? 0 : 'lg'}
     >
       <Stack gap="lg">
         {/* Language Selection Section (Zero Emojis, Pure SVG & Typography) */}

@@ -37,6 +37,8 @@ import {
 } from 'lucide-react';
 import { DownloadOptions, VideoMetadata, Category } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useMediaQuery } from '@mantine/hooks';
+import { getVortexApi, isMobileNative } from '../api';
 
 interface DownloadBarProps {
   onStartDownload: (options: DownloadOptions) => void;
@@ -50,6 +52,9 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
   isDownloading
 }) => {
   const { t } = useLanguage();
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const isMobile = isSmallScreen || isMobileNative;
+
   const [url, setUrl] = useState('');
   const [batchMode, setBatchMode] = useState(false);
   const [batchUrls, setBatchUrls] = useState('');
@@ -113,9 +118,11 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
     if (!targetUrl.startsWith('http')) return;
     setLoadingMeta(true);
     try {
-      // @ts-ignore
-      const meta = await window.smasherAPI.fetchMetadata(targetUrl);
-      setMetadata(meta);
+      const api = getVortexApi();
+      if (api?.fetchMetadata) {
+        const meta = await api.fetchMetadata(targetUrl);
+        setMetadata(meta);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -193,91 +200,172 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
       >
         <Stack gap="md">
           {/* Header Row: Mode Switch & Smart Presets */}
-          <Group justify="space-between" align="center" wrap="wrap">
-            <Group gap="xs">
-              <Button
+          <Stack gap="xs">
+            <Group justify="space-between" align="center" wrap="nowrap">
+              <SegmentedControl
                 size="xs"
                 radius="md"
-                variant={!batchMode ? 'filled' : 'subtle'}
-                color={!batchMode ? 'pink' : 'gray'}
-                onClick={() => setBatchMode(false)}
-              >
-                {t('download.singleUrl')}
-              </Button>
-              <Button
-                size="xs"
-                radius="md"
-                variant={batchMode ? 'filled' : 'subtle'}
-                color={batchMode ? 'pink' : 'gray'}
-                leftSection={<Layers size={14} />}
-                onClick={() => setBatchMode(true)}
-              >
-                {t('download.batchMode')}
-              </Button>
+                value={batchMode ? 'batch' : 'single'}
+                onChange={val => setBatchMode(val === 'batch')}
+                data={[
+                  { value: 'single', label: t('download.singleUrl') },
+                  {
+                    value: 'batch',
+                    label: (
+                      <Group gap={6} wrap="nowrap" align="center">
+                        <Layers size={13} />
+                        <span>{t('download.batchMode')}</span>
+                      </Group>
+                    )
+                  }
+                ]}
+              />
+
+              {!isMobile && (
+                <Text size="xs" c="dimmed" fw={600}>
+                  Perfiles Rápidos
+                </Text>
+              )}
             </Group>
 
-            {/* Smart 1-Click Profile Presets */}
-            <Group gap={6}>
-              <Button size="xs" variant="subtle" color="gray" radius="md" onClick={() => applySmartPreset('mp4-1080p')}>
-                1080p MP4
-              </Button>
-              <Button size="xs" variant="subtle" color="gray" radius="md" onClick={() => applySmartPreset('mp3-320k')}>
-                MP3 320k
-              </Button>
-              <Button size="xs" variant="subtle" color="gray" radius="md" onClick={() => applySmartPreset('fast-720p')}>
-                720p
-              </Button>
-              <Button size="xs" variant="subtle" color="gray" radius="md" onClick={() => applySmartPreset('flac-hires')}>
-                FLAC Hi-Res
-              </Button>
-            </Group>
-          </Group>
+            {/* Smart 1-Click Profile Presets - Horizontal scrollable pills */}
+            <Box
+              style={{
+                display: 'flex',
+                gap: 8,
+                overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                paddingBottom: 4,
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none'
+              }}
+            >
+              {[
+                { id: 'mp4-1080p', label: '1080p MP4' },
+                { id: 'mp3-320k', label: 'MP3 320k' },
+                { id: 'fast-720p', label: '720p HD' },
+                { id: 'flac-hires', label: 'FLAC Hi-Res' }
+              ].map(p => (
+                <Button
+                  key={p.id}
+                  size="xs"
+                  variant="subtle"
+                  color="gray"
+                  radius="xl"
+                  leftSection={<Sparkles size={12} color="#ff2a85" />}
+                  style={{
+                    flexShrink: 0,
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    fontWeight: 600,
+                    paddingLeft: 12,
+                    paddingRight: 12
+                  }}
+                  onClick={() => applySmartPreset(p.id as any)}
+                >
+                  {p.label}
+                </Button>
+              ))}
+            </Box>
+          </Stack>
 
           {/* Input Area */}
           {!batchMode ? (
-            <Group gap="xs" align="flex-end">
-              <TextInput
-                placeholder={t('download.inputPlaceholder')}
-                leftSection={
-                  detectedPlatform ? (
-                    <Badge size="xs" variant="filled" color="pink" style={{ textTransform: 'none' }}>
-                      {detectedPlatform}
-                    </Badge>
-                  ) : (
-                    <Search size={18} />
-                  )
-                }
-                value={url}
-                onChange={e => {
-                  setUrl(e.target.value);
-                  if (e.target.value.includes('http') && !metadata) {
-                    inspectUrl(e.target.value);
+            isMobile ? (
+              <Stack gap="xs">
+                <TextInput
+                  placeholder={t('download.inputPlaceholder')}
+                  leftSection={
+                    detectedPlatform ? (
+                      <Badge size="xs" variant="filled" color="pink" style={{ textTransform: 'none' }}>
+                        {detectedPlatform}
+                      </Badge>
+                    ) : (
+                      <Search size={18} />
+                    )
                   }
-                }}
-                style={{ flex: 1 }}
-                size="md"
-                radius="md"
-                rightSection={
-                  <Tooltip label={t('download.paste')}>
-                    <ActionIcon variant="subtle" onClick={handlePaste} color="gray">
-                      <ClipboardCopy size={18} />
-                    </ActionIcon>
-                  </Tooltip>
-                }
-              />
+                  value={url}
+                  onChange={e => {
+                    setUrl(e.target.value);
+                    if (e.target.value.includes('http') && !metadata) {
+                      inspectUrl(e.target.value);
+                    }
+                  }}
+                  size="md"
+                  radius="md"
+                  rightSection={
+                    <Tooltip label={t('download.paste')}>
+                      <ActionIcon variant="subtle" onClick={handlePaste} color="pink" size="md">
+                        <ClipboardCopy size={18} />
+                      </ActionIcon>
+                    </Tooltip>
+                  }
+                />
 
-              <Button
-                size="md"
-                radius="md"
-                color="pink"
-                leftSection={<Download size={18} strokeWidth={2.2} />}
-                onClick={handleSubmit}
-                disabled={!url.trim()}
-                loading={isDownloading}
-              >
-                {t('download.start')} {mediaType === 'video' ? `(${videoContainer.toUpperCase()})` : `(${audioFormat.toUpperCase()})`}
-              </Button>
-            </Group>
+                <Button
+                  size="lg"
+                  radius="md"
+                  color="pink"
+                  fullWidth
+                  leftSection={<Download size={20} strokeWidth={2.3} />}
+                  onClick={handleSubmit}
+                  disabled={!url.trim()}
+                  loading={isDownloading}
+                  style={{
+                    height: 48,
+                    fontWeight: 700,
+                    letterSpacing: '0.4px',
+                    boxShadow: url.trim() ? '0 4px 18px rgba(255, 42, 133, 0.35)' : 'none'
+                  }}
+                >
+                  {t('download.start')} {mediaType === 'video' ? `(${videoContainer.toUpperCase()})` : `(${audioFormat.toUpperCase()})`}
+                </Button>
+              </Stack>
+            ) : (
+              <Group gap="xs" align="flex-end">
+                <TextInput
+                  placeholder={t('download.inputPlaceholder')}
+                  leftSection={
+                    detectedPlatform ? (
+                      <Badge size="xs" variant="filled" color="pink" style={{ textTransform: 'none' }}>
+                        {detectedPlatform}
+                      </Badge>
+                    ) : (
+                      <Search size={18} />
+                    )
+                  }
+                  value={url}
+                  onChange={e => {
+                    setUrl(e.target.value);
+                    if (e.target.value.includes('http') && !metadata) {
+                      inspectUrl(e.target.value);
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                  size="md"
+                  radius="md"
+                  rightSection={
+                    <Tooltip label={t('download.paste')}>
+                      <ActionIcon variant="subtle" onClick={handlePaste} color="gray">
+                        <ClipboardCopy size={18} />
+                      </ActionIcon>
+                    </Tooltip>
+                  }
+                />
+
+                <Button
+                  size="md"
+                  radius="md"
+                  color="pink"
+                  leftSection={<Download size={18} strokeWidth={2.2} />}
+                  onClick={handleSubmit}
+                  disabled={!url.trim()}
+                  loading={isDownloading}
+                >
+                  {t('download.start')} {mediaType === 'video' ? `(${videoContainer.toUpperCase()})` : `(${audioFormat.toUpperCase()})`}
+                </Button>
+              </Group>
+            )
           ) : (
             <Stack gap="xs">
               <Textarea
@@ -289,22 +377,23 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                 radius="md"
                 styles={{ input: { background: 'rgba(255,255,255,0.04)', color: '#fff' } }}
               />
-              <Group justify="space-between">
+              <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
                 <Text size="xs" c="dimmed">
                   {t('download.batchCount', { count: batchUrls.split('\n').filter(l => l.trim().startsWith('http')).length })}
                 </Text>
-                <Group gap="xs">
-                  <Button size="xs" variant="subtle" color="gray" onClick={handlePaste}>
+                <Group gap="xs" style={{ width: isMobile ? '100%' : 'auto' }}>
+                  <Button size="xs" variant="subtle" color="gray" onClick={handlePaste} style={{ flex: isMobile ? 1 : undefined }}>
                     {t('download.paste')}
                   </Button>
                   <Button
-                    size="sm"
+                    size={isMobile ? 'md' : 'sm'}
                     color="pink"
                     radius="md"
                     leftSection={<Download size={16} />}
                     onClick={handleSubmit}
                     disabled={!batchUrls.trim()}
                     loading={isDownloading}
+                    style={{ flex: isMobile ? 2 : undefined }}
                   >
                     {t('download.start')}
                   </Button>
@@ -324,18 +413,18 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
             <Card p="sm" radius="md" style={{ background: 'rgba(255,255,255,0.04)' }}>
               <Group gap="md">
                 {metadata.thumbnail && (
-                  <Image src={metadata.thumbnail} w={120} h={68} radius="sm" fit="cover" />
+                  <Image src={metadata.thumbnail} w={isMobile ? 90 : 120} h={isMobile ? 54 : 68} radius="sm" fit="cover" />
                 )}
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <Text fw={600} size="sm" lineClamp={1}>
                     {metadata.title}
                   </Text>
-                  <Group gap="xs" mt={4}>
+                  <Group gap="xs" mt={4} wrap="nowrap">
                     <Badge size="xs" color="gray">{metadata.uploader}</Badge>
                     <Badge size="xs" color="dark">{Math.round(metadata.duration / 60)} min</Badge>
                     {metadata.chapters && metadata.chapters.length > 0 && (
                       <Badge size="xs" color="pink" variant="light">
-                        {metadata.chapters.length} Capítulos
+                        {metadata.chapters.length} Caps
                       </Badge>
                     )}
                   </Group>
@@ -345,12 +434,13 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           )}
 
           {/* Mode Selector: Video vs Audio */}
-          <Group justify="space-between" align="center" wrap="wrap" gap="md">
+          <SimpleGrid cols={{ base: 1, sm: mediaType === 'video' ? 2 : 1 }} spacing="md">
             <div>
               <Text size="xs" fw={700} c="dimmed" mb={6} tt="uppercase" style={{ letterSpacing: '0.8px' }}>
                 {t('download.format')}
               </Text>
               <SegmentedControl
+                fullWidth
                 value={mediaType}
                 onChange={val => setMediaType(val as 'video' | 'audio')}
                 color="pink"
@@ -360,8 +450,8 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                   {
                     value: 'video',
                     label: (
-                      <Group gap={8} wrap="nowrap" align="center" px={6}>
-                        <Video size={16} strokeWidth={2} />
+                      <Group gap={8} justify="center" wrap="nowrap" align="center" py={2}>
+                        <Video size={16} strokeWidth={2.2} />
                         <span style={{ fontWeight: 600 }}>{t('download.video')}</span>
                       </Group>
                     )
@@ -369,8 +459,8 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                   {
                     value: 'audio',
                     label: (
-                      <Group gap={8} wrap="nowrap" align="center" px={6}>
-                        <Music size={16} strokeWidth={2} />
+                      <Group gap={8} justify="center" wrap="nowrap" align="center" py={2}>
+                        <Music size={16} strokeWidth={2.2} />
                         <span style={{ fontWeight: 600 }}>{t('download.audio')}</span>
                       </Group>
                     )
@@ -383,29 +473,24 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
             {mediaType === 'video' && (
               <div>
                 <Text size="xs" fw={700} c="dimmed" mb={6} tt="uppercase" style={{ letterSpacing: '0.8px' }}>
-                  {t('download.format')}
+                  Contenedor
                 </Text>
-                <Group gap="xs" wrap="nowrap">
-                  {[
-                    { id: 'mp4', label: 'MP4' },
-                    { id: 'mkv', label: 'MKV' },
-                    { id: 'webm', label: 'WebM' }
-                  ].map(c => (
-                    <Button
-                      key={c.id}
-                      variant={videoContainer === c.id ? 'filled' : 'light'}
-                      color={videoContainer === c.id ? 'pink' : 'gray'}
-                      size="xs"
-                      radius="md"
-                      onClick={() => setVideoContainer(c.id as any)}
-                    >
-                      {c.label}
-                    </Button>
-                  ))}
-                </Group>
+                <SegmentedControl
+                  fullWidth
+                  value={videoContainer}
+                  onChange={val => setVideoContainer(val as any)}
+                  color="pink"
+                  size="sm"
+                  radius="md"
+                  data={[
+                    { value: 'mp4', label: 'MP4' },
+                    { value: 'mkv', label: 'MKV' },
+                    { value: 'webm', label: 'WebM' }
+                  ]}
+                />
               </div>
             )}
-          </Group>
+          </SimpleGrid>
 
           <Divider style={{ borderColor: 'rgba(255,255,255,0.06)' }} />
 
@@ -415,7 +500,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
               <Text size="xs" fw={700} c="dimmed" mb={6} tt="uppercase" style={{ letterSpacing: '0.8px' }}>
                 {t('download.resolution')} ({videoContainer.toUpperCase()})
               </Text>
-              <Group gap="xs" wrap="wrap">
+              <SimpleGrid cols={{ base: 3, sm: 6 }} spacing="xs">
                 {[
                   { id: 'best', label: t('download.bestQuality'), icon: true },
                   { id: '4k', label: '4K (2160p)' },
@@ -432,18 +517,22 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                     radius="md"
                     leftSection={r.icon ? <Sparkles size={13} strokeWidth={2} /> : undefined}
                     onClick={() => setVideoResolution(r.id as any)}
+                    style={{
+                      background: videoResolution === r.id ? undefined : 'rgba(255,255,255,0.03)',
+                      border: videoResolution === r.id ? undefined : '1px solid rgba(255,255,255,0.06)'
+                    }}
                   >
                     {r.label}
                   </Button>
                 ))}
-              </Group>
+              </SimpleGrid>
             </div>
           ) : (
             <div>
               <Text size="xs" fw={700} c="dimmed" mb={6} tt="uppercase" style={{ letterSpacing: '0.8px' }}>
                 {t('download.format')}
               </Text>
-              <Group gap="xs" wrap="wrap">
+              <SimpleGrid cols={{ base: 3, sm: 5 }} spacing="xs">
                 {[
                   { id: 'mp3', label: 'MP3 320k', icon: true },
                   { id: 'm4a', label: 'M4A / AAC' },
@@ -453,17 +542,21 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                 ].map(a => (
                   <Button
                     key={a.id}
-                    variant={audioFormat === a.id ? 'filled' : 'light'}
+                    variant={audioFormat === a.id ? 'filled' : 'subtle'}
                     color={audioFormat === a.id ? 'pink' : 'gray'}
                     size="xs"
                     radius="md"
                     leftSection={a.icon ? <Sparkles size={13} strokeWidth={2} /> : undefined}
                     onClick={() => setAudioFormat(a.id as any)}
+                    style={{
+                      background: audioFormat === a.id ? undefined : 'rgba(255,255,255,0.03)',
+                      border: audioFormat === a.id ? undefined : '1px solid rgba(255,255,255,0.06)'
+                    }}
                   >
                     {a.label}
                   </Button>
                 ))}
-              </Group>
+              </SimpleGrid>
             </div>
           )}
 
@@ -497,20 +590,22 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
               thumbIcon={<Subtitles size={12} />}
             />
 
-            <Select
-              label={t('download.browserCookies')}
-              size="xs"
-              value={browserCookies}
-              onChange={v => setBrowserCookies(v || 'none')}
-              data={[
-                { value: 'none', label: t('download.cookiesNone') },
-                { value: 'brave', label: 'Brave' },
-                { value: 'chrome', label: 'Chrome' },
-                { value: 'firefox', label: 'Firefox' },
-                { value: 'edge', label: 'Edge' },
-              ]}
-              leftSection={<Cookie size={14} />}
-            />
+            {!isMobileNative && (
+              <Select
+                label={t('download.browserCookies')}
+                size="xs"
+                value={browserCookies}
+                onChange={v => setBrowserCookies(v || 'none')}
+                data={[
+                  { value: 'none', label: t('download.cookiesNone') },
+                  { value: 'brave', label: 'Brave' },
+                  { value: 'chrome', label: 'Chrome' },
+                  { value: 'firefox', label: 'Firefox' },
+                  { value: 'edge', label: 'Edge' },
+                ]}
+                leftSection={<Cookie size={14} />}
+              />
+            )}
           </SimpleGrid>
         </Stack>
       </Paper>
