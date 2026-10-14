@@ -48,7 +48,7 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace --info > ../gradle.log 2>&1 || (echo "=== GRADLE FAILURE ===" && grep -E "error:|FAILURE:|FAILED|Exception:" -A 8 ../gradle.log | head -n 120 && exit 1)
           mkdir -p ../dist-apk
           find . -name "*.apk" -exec cp -v {} ../dist-apk/ \;
           ls -la ../dist-apk/
@@ -59,3 +59,11 @@ jobs:
           name: Vortex-Android-APK
           path: dist-apk/
           if-no-files-found: warn
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-log
+          path: gradle.log
+          if-no-files-found: ignore
