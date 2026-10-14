@@ -33,9 +33,10 @@ Vortex is a modern, standalone desktop application engineered for seamless video
 ### Local Network QR Mobile Sharing
 - Built-in lightweight LAN HTTP server running on local port 6767.
 - Dynamic QR code generation: scan with any phone or tablet on the same Wi-Fi network to open the Vortex Mobile web interface.
+- Progressive Web Interface: dark cyber-minimalist glassmorphism UI, safe-area adaptive layout, touch-optimized ergonomics (44px hit targets), real-time search & filtering, and pure vector SVG iconography.
 - Bidirectional workflow:
-  - Download to mobile: stream and save completed desktop downloads directly to mobile device storage.
-  - Send to PC: paste links from your mobile browser to immediately trigger downloads on your workstation.
+  - Download & stream to mobile: stream media directly in your mobile browser with HTTP 206 Range seeking or save directly to mobile device storage.
+  - Send to PC: paste links from your mobile clipboard with format preset selection (MP4, 1080p, 720p, MP3 320k, M4A, FLAC) to trigger downloads on your workstation.
 
 ### Local SQLite Database and Backward Compatibility
 - Fast in-memory WebAssembly SQLite engine (`sql.js`) backed by disk persistence at `%USERPROFILE%\.vortex\storage\vortex.db`.
