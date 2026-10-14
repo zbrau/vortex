@@ -304,7 +304,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                         src={item.thumbnail_url}
                         height={140}
                         fit="cover"
-                        fallbackSrc="https://placehold.co/600x400/111/444?text=Sin+Miniatura"
+                        onError={(e: any) => {
+                          if (e?.currentTarget) e.currentTarget.style.display = 'none';
+                        }}
                       />
                     ) : (
                       <Center h={140}>

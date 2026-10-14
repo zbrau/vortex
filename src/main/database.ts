@@ -8,6 +8,7 @@ export class VortexDatabase {
   private db!: Database;
   private dbPath: string;
   private isReady = false;
+  private saveTimeout: NodeJS.Timeout | null = null;
 
   constructor(vortexDir: string) {
     const storageDir = path.join(vortexDir, 'storage');
@@ -145,12 +146,27 @@ export class VortexDatabase {
     }
   }
 
-  private saveToDisk() {
-    try {
-      const data = this.db.export();
-      fs.writeFileSync(this.dbPath, Buffer.from(data));
-    } catch (err) {
-      console.error('Error guardando smasher.db en disco:', err);
+  private saveToDisk(immediate = false) {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+      this.saveTimeout = null;
+    }
+
+    const doSave = () => {
+      try {
+        const data = this.db.export();
+        fs.promises.writeFile(this.dbPath, Buffer.from(data)).catch(err => {
+          console.error('Error guardando vortex.db en disco:', err);
+        });
+      } catch (err) {
+        console.error('Error exportando vortex.db:', err);
+      }
+    };
+
+    if (immediate) {
+      doSave();
+    } else {
+      this.saveTimeout = setTimeout(doSave, 200);
     }
   }
 

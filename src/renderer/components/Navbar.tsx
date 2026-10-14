@@ -60,8 +60,10 @@ export const Navbar: React.FC<NavbarProps> = ({
       wrap="nowrap"
       style={{
         borderBottom: '1px solid rgba(255,255,255,0.08)',
-        background: 'rgba(10, 8, 16, 0.4)',
-        backdropFilter: 'blur(20px)',
+        background: 'rgba(10, 8, 16, 0.75)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        transform: 'translateZ(0)',
         minHeight: 64,
         position: 'sticky',
         top: 0,

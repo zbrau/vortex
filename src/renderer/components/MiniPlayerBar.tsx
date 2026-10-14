@@ -141,8 +141,10 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
         right: 0,
         zIndex: 999,
         padding: '8px 16px',
-        background: 'rgba(12, 10, 20, 0.88)',
-        backdropFilter: 'blur(24px)',
+        background: 'rgba(12, 10, 20, 0.92)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        transform: 'translateZ(0)',
         borderTop: `1px solid ${accentColor}40`,
         boxShadow: `0 -10px 40px rgba(0,0,0,0.6)`,
         animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'

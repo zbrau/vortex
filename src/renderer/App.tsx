@@ -136,12 +136,17 @@ export const App: React.FC = () => {
         }
       });
 
+      let libUpdateTimer: any = null;
       const unsubLib = api.onLibraryUpdated ? api.onLibraryUpdated(() => {
-        refreshLibrary();
+        if (libUpdateTimer) clearTimeout(libUpdateTimer);
+        libUpdateTimer = setTimeout(() => {
+          refreshLibrary();
+        }, 200);
       }) : null;
 
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
+        if (libUpdateTimer) clearTimeout(libUpdateTimer);
         if (unsubscribe) unsubscribe();
         if (unsubLib) unsubLib();
       };
@@ -150,7 +155,7 @@ export const App: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [refreshBinaryStatus, refreshLibrary, refreshCategories, t]);
+  }, [refreshBinaryStatus, refreshLibrary, refreshCategories]);
 
   const handleStartDownload = async (options: DownloadOptions) => {
     const api = getApi();
@@ -247,7 +252,6 @@ export const App: React.FC = () => {
           background: `radial-gradient(ellipse 70% 35% at 50% -5%, ${effectiveAccent}18, transparent 70%), ${activeThemeConfig.bg}`,
           minHeight: '100vh',
           color: '#fff',
-          transition: 'background 0.3s ease, border-color 0.3s ease',
           paddingBottom: miniPlayerItem ? 85 : 0
         }}
       >

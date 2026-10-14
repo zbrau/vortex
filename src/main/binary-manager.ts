@@ -33,37 +33,66 @@ export class BinaryManager {
     return this.vortexDir;
   }
 
+  private cachedBinaries: Map<string, string> = new Map();
+  private cachedStatus: SystemBinariesStatus | null = null;
+
   public getBinDir(): string {
     return this.binDir;
+  }
+
+  public invalidateCache(): void {
+    this.cachedBinaries.clear();
+    this.cachedStatus = null;
   }
 
   public findBinary(name: string): string {
     const isWin = process.platform === 'win32';
     const exeName = isWin ? `${name}.exe` : name;
 
+    if (this.cachedBinaries.has(name)) {
+      const cached = this.cachedBinaries.get(name)!;
+      if (cached && fs.existsSync(cached)) return cached;
+      this.cachedBinaries.delete(name);
+    }
+
     // 1. Check local .vortex/bin
     const localPath = path.join(this.binDir, exeName);
-    if (fs.existsSync(localPath)) return localPath;
+    if (fs.existsSync(localPath)) {
+      this.cachedBinaries.set(name, localPath);
+      return localPath;
+    }
 
     // 2. Check legacy .smasher/bin
     const smasherPath = path.join(this.smasherDir, 'bin', exeName);
-    if (fs.existsSync(smasherPath)) return smasherPath;
+    if (fs.existsSync(smasherPath)) {
+      this.cachedBinaries.set(name, smasherPath);
+      return smasherPath;
+    }
 
     // 3. Check legacy .stacher directory
     const stacherPath = path.join(this.stacherDir, exeName);
-    if (fs.existsSync(stacherPath)) return stacherPath;
+    if (fs.existsSync(stacherPath)) {
+      this.cachedBinaries.set(name, stacherPath);
+      return stacherPath;
+    }
 
     // Special check for nested ffmpeg in .stacher
     if (name === 'ffmpeg' || name === 'ffprobe') {
       const nestedStacher = path.join(this.stacherDir, 'ffmpeg-master-latest-win64-gpl', 'bin', exeName);
-      if (fs.existsSync(nestedStacher)) return nestedStacher;
+      if (fs.existsSync(nestedStacher)) {
+        this.cachedBinaries.set(name, nestedStacher);
+        return nestedStacher;
+      }
     }
 
     // 4. Check system PATH
     try {
       const cmd = isWin ? `where.exe ${name}` : `which ${name}`;
-      const found = execSync(cmd, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n')[0].trim();
-      if (found && fs.existsSync(found)) return found;
+      const found = execSync(cmd, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 1000 }).trim().split('\n')[0].trim();
+      if (found && fs.existsSync(found)) {
+        this.cachedBinaries.set(name, found);
+        return found;
+      }
     } catch {
       // not in path
     }
@@ -71,7 +100,11 @@ export class BinaryManager {
     return '';
   }
 
-  public getStatus(): SystemBinariesStatus {
+  public getStatus(force = false): SystemBinariesStatus {
+    if (!force && this.cachedStatus) {
+      return this.cachedStatus;
+    }
+
     const ytdlpPath = this.findBinary('yt-dlp');
     const ffmpegPath = this.findBinary('ffmpeg');
     const denoPath = this.findBinary('deno');
@@ -79,7 +112,7 @@ export class BinaryManager {
     const getVersion = (binPath: string, arg = '--version') => {
       if (!binPath) return undefined;
       try {
-        return execSync(`"${binPath}" ${arg}`, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 2500 }).trim().split('\n')[0].trim();
+        return execSync(`"${binPath}" ${arg}`, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 1500 }).trim().split('\n')[0].trim();
       } catch {
         return 'installed';
       }
@@ -88,13 +121,15 @@ export class BinaryManager {
     const hasYtdlp = !!ytdlpPath;
     const hasFfmpeg = !!ffmpegPath;
 
-    return {
+    this.cachedStatus = {
       ytdlp: { found: hasYtdlp, path: ytdlpPath, version: getVersion(ytdlpPath) },
       ffmpeg: { found: hasFfmpeg, path: ffmpegPath, version: getVersion(ffmpegPath, '-version') },
       deno: { found: !!denoPath, path: denoPath, version: getVersion(denoPath) },
       ready: hasYtdlp,
       needsBootstrap: !hasYtdlp || !hasFfmpeg
     };
+
+    return this.cachedStatus;
   }
 
   private downloadWithRedirects(
@@ -358,7 +393,8 @@ export class BinaryManager {
         message: 'Verificando y probando motores multimedia...'
       });
 
-      const finalStatus = this.getStatus();
+      this.invalidateCache();
+      const finalStatus = this.getStatus(true);
       if (!finalStatus.ready) {
         throw new Error('La instalación finalizó pero el motor yt-dlp no respondió.');
       }

@@ -10,6 +10,7 @@ export class VortexDownloader {
   private binaryManager: BinaryManager;
   private activeProcesses: Map<string, ChildProcess> = new Map();
   private onProgressCallback?: (progress: DownloadProgress) => void;
+  private lastProgressEmit: Map<string, number> = new Map();
 
   constructor(binaryManager: BinaryManager) {
     this.binaryManager = binaryManager;
@@ -210,20 +211,27 @@ export class VortexDownloader {
         // Parse progress: [download]   6.9% of  218.53KiB at    3.66MiB/s ETA 00:00
         const progressMatch = line.match(/\[download\]\s+([\d.]+)%\s+of\s+~?([\w.]+)\s+at\s+([^\s]+)\s+ETA\s+([^\s]+)/i);
         if (progressMatch && this.onProgressCallback) {
-          this.onProgressCallback({
-            id,
-            status: 'downloading',
-            percent: parseFloat(progressMatch[1]),
-            totalSize: progressMatch[2],
-            speed: progressMatch[3],
-            eta: progressMatch[4],
-            downloadedSize: ''
-          });
+          const now = Date.now();
+          const last = this.lastProgressEmit.get(id) || 0;
+          const pct = parseFloat(progressMatch[1]);
+          if (now - last > 120 || pct >= 100) {
+            this.lastProgressEmit.set(id, now);
+            this.onProgressCallback({
+              id,
+              status: 'downloading',
+              percent: pct,
+              totalSize: progressMatch[2],
+              speed: progressMatch[3],
+              eta: progressMatch[4],
+              downloadedSize: ''
+            });
+          }
         }
 
         // Parse 100% completion line
         const finishMatch = line.match(/\[download\]\s+100%\s+of\s+~?([\w.]+)/i);
         if (finishMatch && this.onProgressCallback) {
+          this.lastProgressEmit.set(id, Date.now());
           this.onProgressCallback({
             id,
             status: 'downloading',
@@ -244,6 +252,7 @@ export class VortexDownloader {
 
     proc.on('close', code => {
       this.activeProcesses.delete(id);
+      this.lastProgressEmit.delete(id);
 
       if (code === 0) {
         let size = 0;

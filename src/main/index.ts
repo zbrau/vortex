@@ -60,6 +60,11 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 
+// Hardware acceleration and GPU rasterization optimization for smooth rendering
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1240,
@@ -74,7 +79,8 @@ function createWindow() {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      backgroundThrottling: false
     }
   });
 
