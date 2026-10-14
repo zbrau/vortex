@@ -49,7 +49,7 @@ jobs:
         run: |
           cd android
           if ! ./gradlew assembleDebug --stacktrace --info > ../gradle.log 2>&1; then
-            ERR_MSG=$(grep -i -E "error:|FAILURE:|FAILED" ../gradle.log | head -n 8 | tr '\n' ' ' | cut -c 1-500)
+            ERR_MSG=$(grep -A 12 "What went wrong:" ../gradle.log | tr '\n' ' | ' | cut -c 1-800)
             echo "::error title=Gradle Error::$ERR_MSG"
             tail -n 120 ../gradle.log
             exit 1
