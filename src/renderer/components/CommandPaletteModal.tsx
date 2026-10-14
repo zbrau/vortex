@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { DownloadItem, ThemePreset } from '../types';
 import { themes } from '../theme/themes';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface CommandPaletteModalProps {
   opened: boolean;
@@ -50,6 +51,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onOpenQr,
   onOpenMaintenance
 }) => {
+  const { t } = useLanguage();
   const [query, setQuery] = useState('');
 
   const filteredItems = libraryItems.filter(item =>
@@ -85,8 +87,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     >
       <Stack gap="md">
         <TextInput
-          placeholder="Buscar descargas, canciones, videos o comandos (Ctrl+K)..."
-          leftSection={<Search size={20} color="#ff2a85" />}
+          placeholder={t('palette.placeholder')}
+          leftSection={<Search size={20} color="#00e5ff" />}
           rightSection={<Kbd size="xs">ESC</Kbd>}
           value={query}
           onChange={e => setQuery(e.target.value)}
@@ -109,7 +111,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             {query.length === 0 && (
               <div>
                 <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb={6} style={{ letterSpacing: '0.6px' }}>
-                  Acciones Rápidas
+                  {t('palette.actions')}
                 </Text>
                 <Stack gap={4}>
                   <Paper

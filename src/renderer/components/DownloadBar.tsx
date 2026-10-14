@@ -36,6 +36,7 @@ import {
   Globe
 } from 'lucide-react';
 import { DownloadOptions, VideoMetadata, Category } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface DownloadBarProps {
   onStartDownload: (options: DownloadOptions) => void;
@@ -48,6 +49,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
   categories,
   isDownloading
 }) => {
+  const { t } = useLanguage();
   const [url, setUrl] = useState('');
   const [batchMode, setBatchMode] = useState(false);
   const [batchUrls, setBatchUrls] = useState('');
@@ -200,7 +202,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                 color={!batchMode ? 'pink' : 'gray'}
                 onClick={() => setBatchMode(false)}
               >
-                Descarga Individual
+                {t('download.singleUrl')}
               </Button>
               <Button
                 size="xs"
@@ -210,13 +212,12 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                 leftSection={<Layers size={14} />}
                 onClick={() => setBatchMode(true)}
               >
-                Modo Lote (Múltiples Enlaces)
+                {t('download.batchMode')}
               </Button>
             </Group>
 
             {/* Smart 1-Click Profile Presets */}
             <Group gap={6}>
-              <Text size="xs" c="dimmed">Perfiles Rápidos:</Text>
               <Button size="xs" variant="subtle" color="gray" radius="md" onClick={() => applySmartPreset('mp4-1080p')}>
                 1080p MP4
               </Button>
@@ -224,7 +225,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                 MP3 320k
               </Button>
               <Button size="xs" variant="subtle" color="gray" radius="md" onClick={() => applySmartPreset('fast-720p')}>
-                Rápido 720p
+                720p
               </Button>
               <Button size="xs" variant="subtle" color="gray" radius="md" onClick={() => applySmartPreset('flac-hires')}>
                 FLAC Hi-Res
@@ -236,7 +237,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           {!batchMode ? (
             <Group gap="xs" align="flex-end">
               <TextInput
-                placeholder="Pega aquí el enlace de YouTube, TikTok, Twitter/X, SoundCloud..."
+                placeholder={t('download.inputPlaceholder')}
                 leftSection={
                   detectedPlatform ? (
                     <Badge size="xs" variant="filled" color="pink" style={{ textTransform: 'none' }}>
@@ -257,7 +258,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                 size="md"
                 radius="md"
                 rightSection={
-                  <Tooltip label="Pegar del portapapeles">
+                  <Tooltip label={t('download.paste')}>
                     <ActionIcon variant="subtle" onClick={handlePaste} color="gray">
                       <ClipboardCopy size={18} />
                     </ActionIcon>
@@ -274,13 +275,13 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                 disabled={!url.trim()}
                 loading={isDownloading}
               >
-                Descargar {mediaType === 'video' ? `Video (${videoContainer.toUpperCase()})` : `Audio (${audioFormat.toUpperCase()})`}
+                {t('download.start')} {mediaType === 'video' ? `(${videoContainer.toUpperCase()})` : `(${audioFormat.toUpperCase()})`}
               </Button>
             </Group>
           ) : (
             <Stack gap="xs">
               <Textarea
-                placeholder="Pega múltiples enlaces aquí (uno por línea):&#10;https://youtube.com/watch?v=...&#10;https://soundcloud.com/..."
+                placeholder={t('download.batchPlaceholder')}
                 minRows={3}
                 maxRows={6}
                 value={batchUrls}
@@ -290,11 +291,11 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
               />
               <Group justify="space-between">
                 <Text size="xs" c="dimmed">
-                  {batchUrls.split('\n').filter(l => l.trim().startsWith('http')).length} enlaces detectados para descargar
+                  {t('download.batchCount', { count: batchUrls.split('\n').filter(l => l.trim().startsWith('http')).length })}
                 </Text>
                 <Group gap="xs">
                   <Button size="xs" variant="subtle" color="gray" onClick={handlePaste}>
-                    Pegar del portapapeles
+                    {t('download.paste')}
                   </Button>
                   <Button
                     size="sm"
@@ -305,7 +306,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                     disabled={!batchUrls.trim()}
                     loading={isDownloading}
                   >
-                    Iniciar Descarga en Cola
+                    {t('download.start')}
                   </Button>
                 </Group>
               </Group>
@@ -315,7 +316,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           {/* Quick Metadata Preview Card */}
           {loadingMeta && (
             <Text size="sm" c="dimmed">
-              Consultando detalles y capítulos del video...
+              {t('download.fetchingMeta')}
             </Text>
           )}
 
@@ -347,7 +348,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           <Group justify="space-between" align="center" wrap="wrap" gap="md">
             <div>
               <Text size="xs" fw={700} c="dimmed" mb={6} tt="uppercase" style={{ letterSpacing: '0.8px' }}>
-                Tipo de Descarga
+                {t('download.format')}
               </Text>
               <SegmentedControl
                 value={mediaType}
@@ -361,7 +362,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                     label: (
                       <Group gap={8} wrap="nowrap" align="center" px={6}>
                         <Video size={16} strokeWidth={2} />
-                        <span style={{ fontWeight: 600 }}>Video Completo</span>
+                        <span style={{ fontWeight: 600 }}>{t('download.video')}</span>
                       </Group>
                     )
                   },
@@ -370,7 +371,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                     label: (
                       <Group gap={8} wrap="nowrap" align="center" px={6}>
                         <Music size={16} strokeWidth={2} />
-                        <span style={{ fontWeight: 600 }}>Solo Audio</span>
+                        <span style={{ fontWeight: 600 }}>{t('download.audio')}</span>
                       </Group>
                     )
                   }
@@ -382,11 +383,11 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
             {mediaType === 'video' && (
               <div>
                 <Text size="xs" fw={700} c="dimmed" mb={6} tt="uppercase" style={{ letterSpacing: '0.8px' }}>
-                  Contenedor de Video
+                  {t('download.format')}
                 </Text>
                 <Group gap="xs" wrap="nowrap">
                   {[
-                    { id: 'mp4', label: 'MP4 (Universal)' },
+                    { id: 'mp4', label: 'MP4' },
                     { id: 'mkv', label: 'MKV' },
                     { id: 'webm', label: 'WebM' }
                   ].map(c => (
@@ -412,11 +413,11 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           {mediaType === 'video' ? (
             <div>
               <Text size="xs" fw={700} c="dimmed" mb={6} tt="uppercase" style={{ letterSpacing: '0.8px' }}>
-                Resolución ({videoContainer.toUpperCase()})
+                {t('download.resolution')} ({videoContainer.toUpperCase()})
               </Text>
               <Group gap="xs" wrap="wrap">
                 {[
-                  { id: 'best', label: 'Mejor Calidad Original', icon: true },
+                  { id: 'best', label: t('download.bestQuality'), icon: true },
                   { id: '4k', label: '4K (2160p)' },
                   { id: '1440p', label: '2K (1440p)' },
                   { id: '1080p', label: '1080p FHD' },
@@ -440,15 +441,15 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           ) : (
             <div>
               <Text size="xs" fw={700} c="dimmed" mb={6} tt="uppercase" style={{ letterSpacing: '0.8px' }}>
-                Formato de Audio
+                {t('download.format')}
               </Text>
               <Group gap="xs" wrap="wrap">
                 {[
-                  { id: 'mp3', label: 'MP3 320k (Universal)', icon: true },
-                  { id: 'm4a', label: 'M4A / AAC (Universal)' },
-                  { id: 'flac', label: 'FLAC (Sin Pérdida)' },
-                  { id: 'wav', label: 'WAV (Estudio PCM)' },
-                  { id: 'opus', label: 'Opus (Alta Fidelidad)' }
+                  { id: 'mp3', label: 'MP3 320k', icon: true },
+                  { id: 'm4a', label: 'M4A / AAC' },
+                  { id: 'flac', label: 'FLAC' },
+                  { id: 'wav', label: 'WAV' },
+                  { id: 'opus', label: 'Opus' }
                 ].map(a => (
                   <Button
                     key={a.id}
@@ -470,7 +471,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md" pt="xs">
             <Switch
               label="SponsorBlock"
-              description="Saltar intros, sponsors y promos"
+              description={t('download.sponsorblock')}
               checked={enableSponsorblock}
               onChange={e => setEnableSponsorblock(e.currentTarget.checked)}
               color="pink"
@@ -479,8 +480,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
             />
 
             <Switch
-              label="Incrustar Miniatura"
-              description="Guardar carátula en el archivo"
+              label={t('download.embedThumbnail')}
               checked={embedThumbnail}
               onChange={e => setEmbedThumbnail(e.currentTarget.checked)}
               color="pink"
@@ -489,8 +489,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
             />
 
             <Switch
-              label="Incrustar Subtítulos"
-              description="Descargar pistas de subtítulos"
+              label={t('download.embedSubtitles')}
               checked={embedSubtitles}
               onChange={e => setEmbedSubtitles(e.currentTarget.checked)}
               color="pink"
@@ -499,16 +498,16 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
             />
 
             <Select
-              label="Cookies del Navegador"
+              label={t('download.browserCookies')}
               size="xs"
               value={browserCookies}
               onChange={v => setBrowserCookies(v || 'none')}
               data={[
-                { value: 'none', label: 'Ninguno' },
-                { value: 'brave', label: 'Brave Browser' },
-                { value: 'chrome', label: 'Google Chrome' },
-                { value: 'firefox', label: 'Mozilla Firefox' },
-                { value: 'edge', label: 'Microsoft Edge' },
+                { value: 'none', label: t('download.cookiesNone') },
+                { value: 'brave', label: 'Brave' },
+                { value: 'chrome', label: 'Chrome' },
+                { value: 'firefox', label: 'Firefox' },
+                { value: 'edge', label: 'Edge' },
               ]}
               leftSection={<Cookie size={14} />}
             />

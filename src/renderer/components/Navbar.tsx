@@ -8,7 +8,8 @@ import {
   Tooltip,
   Text,
   Button,
-  Kbd
+  Kbd,
+  Menu
 } from '@mantine/core';
 import {
   Download,
@@ -18,9 +19,11 @@ import {
   QrCode,
   Wrench,
   Settings,
-  Search
+  Search,
+  Globe
 } from 'lucide-react';
 import { SystemBinariesStatus } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface NavbarProps {
   activeTab: string;
@@ -45,6 +48,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSetup,
   itemCount
 }) => {
+  const { language, setLanguage, t, languages } = useLanguage();
+
   return (
     <Group
       justify="space-between"
@@ -97,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Group gap={8} wrap="nowrap" align="center" px={12} py={4}>
                 <Download size={16} strokeWidth={2.2} />
                 <Text size="sm" fw={600} style={{ whiteSpace: 'nowrap' }}>
-                  Descargar
+                  {t('nav.download')}
                 </Text>
               </Group>
             )
@@ -108,7 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Group gap={8} wrap="nowrap" align="center" px={12} py={4}>
                 <Library size={16} strokeWidth={2.2} />
                 <Text size="sm" fw={600} style={{ whiteSpace: 'nowrap' }}>
-                  Biblioteca {itemCount > 0 && `(${itemCount})`}
+                  {t('nav.library')} {itemCount > 0 && `(${itemCount})`}
                 </Text>
               </Group>
             )
@@ -131,11 +136,55 @@ export const Navbar: React.FC<NavbarProps> = ({
             border: '1px solid rgba(255,255,255,0.06)'
           }}
         >
-          Buscar...
+          {t('nav.search')}
         </Button>
 
+        {/* Language Selector Dropdown */}
+        <Menu shadow="md" width={180} position="bottom-end" radius="md">
+          <Menu.Target>
+            <Tooltip label={t('nav.language')}>
+              <Button
+                variant="subtle"
+                size="xs"
+                radius="md"
+                color="gray"
+                leftSection={<Globe size={15} color="#00e5ff" />}
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  height: 30,
+                  paddingLeft: 8,
+                  paddingRight: 10
+                }}
+              >
+                <Text size="xs" fw={700}>
+                  {languages.find(l => l.code === language)?.flag} {language.toUpperCase()}
+                </Text>
+              </Button>
+            </Tooltip>
+          </Menu.Target>
+
+          <Menu.Dropdown style={{ background: 'rgba(16, 14, 26, 0.96)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <Menu.Label>{t('settings.languageSection')}</Menu.Label>
+            {languages.map((l) => (
+              <Menu.Item
+                key={l.code}
+                onClick={() => setLanguage(l.code)}
+                leftSection={<span style={{ fontSize: 16 }}>{l.flag}</span>}
+                style={{
+                  fontWeight: language === l.code ? 700 : 500,
+                  color: language === l.code ? '#00e5ff' : 'inherit',
+                  background: language === l.code ? 'rgba(0, 229, 255, 0.12)' : undefined
+                }}
+              >
+                {l.nativeLabel}
+              </Menu.Item>
+            ))}
+          </Menu.Dropdown>
+        </Menu>
+
         {binaryStatus && (
-          <Tooltip label={binaryStatus.ready ? `Motor activo: ${binaryStatus.ytdlp.path}` : 'Haz clic para instalar yt-dlp y ffmpeg automáticamente'}>
+          <Tooltip label={binaryStatus.ready ? t('nav.engineTooltipReady') : t('nav.engineTooltipNotReady')}>
             <Badge
               leftSection={
                 binaryStatus.ready ? (
@@ -154,45 +203,45 @@ export const Navbar: React.FC<NavbarProps> = ({
                 cursor: !binaryStatus.ready || binaryStatus.needsBootstrap ? 'pointer' : 'default'
               }}
             >
-              {binaryStatus.ready ? 'Motor Listo' : 'Configurar Motor'}
+              {binaryStatus.ready ? t('nav.engineReady') : t('nav.configureEngine')}
             </Badge>
           </Tooltip>
         )}
 
-        <Tooltip label="Transferencia QR a Celular">
+        <Tooltip label={t('nav.qrShare')}>
           <ActionIcon
             variant="subtle"
             size="lg"
             radius="md"
             onClick={onOpenQrShare}
             color="pink"
-            aria-label="Compartir QR"
+            aria-label={t('nav.qrShare')}
           >
             <QrCode size={19} strokeWidth={2} />
           </ActionIcon>
         </Tooltip>
 
-        <Tooltip label="Mantenimiento y Respaldo">
+        <Tooltip label={t('nav.maintenance')}>
           <ActionIcon
             variant="subtle"
             size="lg"
             radius="md"
             onClick={onOpenMaintenance}
             color="gray"
-            aria-label="Mantenimiento"
+            aria-label={t('nav.maintenance')}
           >
             <Wrench size={19} strokeWidth={2} />
           </ActionIcon>
         </Tooltip>
 
-        <Tooltip label="Ajustes y Temas Visuales">
+        <Tooltip label={t('nav.settings')}>
           <ActionIcon
             variant="subtle"
             size="lg"
             radius="md"
             onClick={onOpenSettings}
             color="gray"
-            aria-label="Ajustes"
+            aria-label={t('nav.settings')}
           >
             <Settings size={19} strokeWidth={2} />
           </ActionIcon>

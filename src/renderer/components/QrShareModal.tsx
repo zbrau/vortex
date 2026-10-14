@@ -24,6 +24,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { QrServerStatus } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface QrShareModalProps {
   opened: boolean;
@@ -31,6 +32,7 @@ interface QrShareModalProps {
 }
 
 export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) => {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<QrServerStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -100,7 +102,7 @@ export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) =
       title={
         <Group gap="xs">
           <QrCode size={20} color="#ff2a85" />
-          <Text fw={700}>Transferencia por Código QR (Wi-Fi)</Text>
+          <Text fw={700}>{t('qr.title')}</Text>
         </Group>
       }
       size="md"
@@ -110,9 +112,9 @@ export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) =
         <Paper p="sm" radius="md" style={{ background: 'rgba(255,255,255,0.03)' }}>
           <Group justify="space-between">
             <div>
-              <Text size="sm" fw={600}>Servidor Web Local</Text>
+              <Text size="sm" fw={600}>LAN Server (Port 6767)</Text>
               <Text size="xs" c="dimmed">
-                Permite conectar tu teléfono en la misma red local
+                {t('qr.subtitle')}
               </Text>
             </div>
             <Switch
@@ -127,8 +129,12 @@ export const QrShareModal: React.FC<QrShareModalProps> = ({ opened, onClose }) =
         {status?.running ? (
           <Stack align="center" gap="sm">
             <Badge color="teal" variant="light" size="lg" leftSection={<Wifi size={14} />}>
-              Servidor Activo en Red Local (Puerto {status.port})
+              {t('qr.serverActive')}
             </Badge>
+
+            <Text size="xs" c="dimmed" ta="center">
+              {t('qr.scanInstruction')}
+            </Text>
 
             {status.qrDataUrl && (
               <Paper

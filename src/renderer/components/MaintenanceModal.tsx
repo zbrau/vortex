@@ -17,6 +17,7 @@ import {
   UploadCloud,
   Check
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface MaintenanceModalProps {
   opened: boolean;
@@ -29,6 +30,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   onClose,
   onRefreshLibrary
 }) => {
+  const { t } = useLanguage();
   const [loadingReconcile, setLoadingReconcile] = useState(false);
   const [loadingBackup, setLoadingBackup] = useState(false);
   const [loadingRestore, setLoadingRestore] = useState(false);
@@ -119,7 +121,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
       title={
         <Group gap="xs">
           <Wrench size={20} color="#ff2a85" />
-          <Text fw={700}>Mantenimiento y Copias de Seguridad</Text>
+          <Text fw={700}>{t('maintenance.title')}</Text>
         </Group>
       }
       size="md"
@@ -131,10 +133,10 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
           <Stack gap="xs">
             <Group gap="xs">
               <FolderSearch size={18} color="#ff2a85" />
-              <Text size="sm" fw={600}>Reconciliar Archivos Faltantes (Reconcile)</Text>
+              <Text size="sm" fw={600}>{t('maintenance.reconcile')}</Text>
             </Group>
             <Text size="xs" c="dimmed">
-              Escanea tus carpetas de descarga para volver a enlazar archivos que hayas movido de sitio o renombrado.
+              {t('maintenance.reconcileDesc')}
             </Text>
             <Button
               size="xs"
@@ -144,7 +146,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
               onClick={handleReconcile}
               loading={loadingReconcile}
             >
-              Escanear y Reconectar Archivos
+              {t('maintenance.reconcile')}
             </Button>
           </Stack>
         </Paper>
@@ -156,10 +158,10 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
           <Stack gap="sm">
             <Group gap="xs">
               <Database size={18} color="#ff2a85" />
-              <Text size="sm" fw={600}>Copia de Seguridad de la Base de Datos</Text>
+              <Text size="sm" fw={600}>{t('maintenance.exportBackup')}</Text>
             </Group>
             <Text size="xs" c="dimmed">
-              Exporta o restaura todo tu catálogo (`smasher.db`) a archivos JSON legibles para migrar entre equipos o guardar respaldo.
+              {t('maintenance.exportDesc')}
             </Text>
 
             <Group grow>
@@ -171,7 +173,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                 onClick={handleBackup}
                 loading={loadingBackup}
               >
-                Exportar a JSON
+                {t('maintenance.exportBackup')}
               </Button>
               <Button
                 size="xs"
@@ -181,7 +183,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                 onClick={handleRestore}
                 loading={loadingRestore}
               >
-                Restaurar desde JSON
+                {t('maintenance.importBackup')}
               </Button>
             </Group>
           </Stack>

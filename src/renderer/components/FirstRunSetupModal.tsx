@@ -22,6 +22,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { SystemBinariesStatus, BootstrapProgress } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface FirstRunSetupModalProps {
   opened: boolean;
@@ -38,6 +39,7 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
   onSuccess,
   accentColor = '#00e5ff'
 }) => {
+  const { t } = useLanguage();
   const [isInstalling, setIsInstalling] = useState(false);
   const [progress, setProgress] = useState<BootstrapProgress>({
     step: 'idle',
@@ -108,7 +110,7 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
             <Sparkles size={16} />
           </ThemeIcon>
           <Text fw={800} size="md" style={{ letterSpacing: '0.3px' }}>
-            Vortex • Configuración Inicial
+            Vortex • {t('setup.title')}
           </Text>
         </Group>
       }
@@ -127,7 +129,7 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
       <Stack gap="md" py="xs">
         <div>
           <Text size="sm" c="dimmed">
-            Para que Vortex descargue y procese videos sin restricciones en esta computadora, necesita configurar sus dos motores independientes:
+            {t('setup.subtitle')}
           </Text>
         </div>
 
@@ -138,12 +140,12 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
               <Group gap="xs">
                 <Cpu size={16} color={hasYtdlp ? '#10b981' : '#f59e0b'} />
                 <div>
-                  <Text size="xs" fw={700}>yt-dlp (Motor de Extracción)</Text>
-                  <Text size="10px" c="dimmed">Descarga de YouTube, TikTok, X, Twitch y 1,000+ sitios</Text>
+                  <Text size="xs" fw={700}>yt-dlp</Text>
+                  <Text size="10px" c="dimmed">YouTube, TikTok, X, Twitch & 1,000+ sites</Text>
                 </div>
               </Group>
               <Badge size="xs" color={hasYtdlp ? 'teal' : 'yellow'} variant="light">
-                {hasYtdlp ? 'Instalado' : 'Pendiente'}
+                {hasYtdlp ? t('settings.installed') : 'Pending'}
               </Badge>
             </Group>
           </Paper>
@@ -153,12 +155,12 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
               <Group gap="xs">
                 <Layers size={16} color={hasFfmpeg ? '#10b981' : '#f59e0b'} />
                 <div>
-                  <Text size="xs" fw={700}>FFmpeg (Transcodificador Universal)</Text>
-                  <Text size="10px" c="dimmed">Ensambla video 1080p/4K con audio e incrusta carátulas</Text>
+                  <Text size="xs" fw={700}>FFmpeg & FFprobe</Text>
+                  <Text size="10px" c="dimmed">Video transcode, audio merge & thumbnails</Text>
                 </div>
               </Group>
               <Badge size="xs" color={hasFfmpeg ? 'teal' : 'yellow'} variant="light">
-                {hasFfmpeg ? 'Instalado' : 'Pendiente'}
+                {hasFfmpeg ? t('settings.installed') : 'Pending'}
               </Badge>
             </Group>
           </Paper>
@@ -189,7 +191,7 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
 
               <Group justify="space-between">
                 <Text size="10px" c="dimmed">
-                  Ubicación: %USERPROFILE%\.vortex\bin\
+                  %USERPROFILE%\.vortex\bin\
                 </Text>
                 {progress.transferred && (
                   <Text size="10px" fw={600} c="dimmed">
@@ -204,18 +206,18 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
         {isDone && (
           <Alert
             icon={<CheckCircle2 size={16} />}
-            title="¡Configuración Exitosa!"
+            title={t('setup.readyTitle')}
             color="teal"
             radius="md"
           >
-            Vortex está listo para descargar videos, audios y transmisiones con máxima calidad.
+            {t('setup.readySubtitle')}
           </Alert>
         )}
 
         {errorMessage && (
           <Alert
             icon={<AlertCircle size={16} />}
-            title="Aviso de Instalación"
+            title="Setup Error"
             color="red"
             radius="md"
           >
@@ -236,7 +238,7 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
               gradient={{ from: 'cyan', to: 'pink' }}
               leftSection={isInstalling ? <RefreshCw className="animate-spin" size={16} /> : <DownloadCloud size={16} />}
             >
-              {isInstalling ? 'Instalando en este equipo...' : 'Instalar Todo con 1-Clic'}
+              {isInstalling ? t('setup.downloading') : t('setup.startDownload')}
             </Button>
           )}
 
@@ -249,7 +251,7 @@ export const FirstRunSetupModal: React.FC<FirstRunSetupModalProps> = ({
               onClick={onClose}
               rightSection={<ArrowRight size={16} />}
             >
-              Comenzar a Descargar
+              {t('setup.continue')}
             </Button>
           )}
         </Group>

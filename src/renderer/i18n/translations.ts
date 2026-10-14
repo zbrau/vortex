@@ -1,0 +1,571 @@
+export type SupportedLanguage = 'es' | 'en' | 'pt' | 'zh';
+
+export interface LanguageOption {
+  code: SupportedLanguage;
+  label: string;
+  nativeLabel: string;
+  flag: string;
+}
+
+export const supportedLanguages: LanguageOption[] = [
+  { code: 'es', label: 'Español', nativeLabel: 'Español', flag: '🇪🇸' },
+  { code: 'en', label: 'English', nativeLabel: 'English', flag: '🇺🇸' },
+  { code: 'pt', label: 'Português', nativeLabel: 'Português', flag: '🇧🇷' },
+  { code: 'zh', label: 'Chino Mandarín', nativeLabel: '简体中文', flag: '🇨🇳' }
+];
+
+export const translations = {
+  es: {
+    // Navbar
+    'nav.download': 'Descargar',
+    'nav.library': 'Biblioteca',
+    'nav.search': 'Buscar...',
+    'nav.engineReady': 'Motor Listo',
+    'nav.configureEngine': 'Configurar Motor',
+    'nav.engineTooltipReady': 'Motor activo: yt-dlp y ffmpeg operativos',
+    'nav.engineTooltipNotReady': 'Haz clic para instalar yt-dlp y ffmpeg automáticamente',
+    'nav.qrShare': 'Transferencia QR a Celular',
+    'nav.maintenance': 'Mantenimiento y Respaldo',
+    'nav.settings': 'Ajustes y Temas Visuales',
+    'nav.language': 'Seleccionar Idioma',
+
+    // Download Bar
+    'download.inputPlaceholder': 'Pega el enlace del video o playlist aquí...',
+    'download.batchPlaceholder': 'Pega una URL por línea para descarga masiva...',
+    'download.singleUrl': 'URL Única',
+    'download.batchMode': 'Modo Lote',
+    'download.paste': 'Pegar',
+    'download.video': 'Video',
+    'download.audio': 'Solo Audio',
+    'download.resolution': 'Resolución',
+    'download.bestQuality': 'Máxima calidad',
+    'download.format': 'Formato',
+    'download.category': 'Categoría',
+    'download.noCategory': 'Sin categoría',
+    'download.sponsorblock': 'SponsorBlock (omitir intro/anuncios)',
+    'download.embedThumbnail': 'Incrustar Miniatura',
+    'download.embedSubtitles': 'Incrustar Subtítulos',
+    'download.browserCookies': 'Cookies de Navegador',
+    'download.cookiesNone': 'Ninguno',
+    'download.start': 'Iniciar Descarga',
+    'download.adding': 'Agregando a la Cola...',
+    'download.fetchingMeta': 'Obteniendo información del video...',
+    'download.batchCount': '{count} enlaces detectados para descargar',
+
+    // Active Queue
+    'queue.title': 'Cola de Descargas en Progreso',
+    'queue.active': 'Activas',
+    'queue.speed': 'Velocidad',
+    'queue.eta': 'Tiempo restante',
+    'queue.cancel': 'Cancelar descarga',
+
+    // Library
+    'library.searchPlaceholder': 'Buscar en tu biblioteca por título o URL...',
+    'library.filterAll': 'Todos',
+    'library.filterVideo': 'Videos',
+    'library.filterAudio': 'Audios',
+    'library.sortBy': 'Ordenar por',
+    'library.sortNewest': 'Más recientes',
+    'library.sortOldest': 'Más antiguos',
+    'library.sortName': 'Nombre (A-Z)',
+    'library.sortSize': 'Tamaño',
+    'library.sortDuration': 'Duración',
+    'library.emptyTitle': 'Tu biblioteca está vacía',
+    'library.emptySubtitle': 'Pega un enlace en la pestaña Descargar para comenzar.',
+    'library.totalStorage': 'Almacenamiento total',
+    'library.videos': 'videos',
+    'library.audios': 'audios',
+    'library.play': 'Reproducir',
+    'library.openFolder': 'Abrir Carpeta',
+    'library.delete': 'Eliminar',
+    'library.deleteConfirm': '¿Deseas eliminar este archivo de la biblioteca y del disco?',
+    'library.duration': 'Duración',
+    'library.size': 'Tamaño',
+    'library.date': 'Fecha',
+
+    // Mini Player & Video Player
+    'player.miniNowPlaying': 'Reproduciendo en segundo plano',
+    'player.expand': 'Pantalla completa / Reproductor',
+    'player.close': 'Cerrar reproductor',
+    'player.chapters': 'Capítulos',
+    'player.noChapters': 'Sin capítulos detectados',
+    'player.speed': 'Velocidad',
+
+    // Settings Modal
+    'settings.title': 'Ajustes y Personalización de Vortex',
+    'settings.languageSection': 'Idioma del Sistema',
+    'settings.languageHelp': 'Elige el idioma de la interfaz de usuario',
+    'settings.themesSection': 'Temas Visuales Desbloqueados (15)',
+    'settings.themesBadge': '100% LIBRE / SIN RESTRICCIONES',
+    'settings.accentSection': 'Color de Acento Personalizado',
+    'settings.accentPlaceholder': 'Elige o escribe tu código HEX (#00e5ff)',
+    'settings.accentReset': 'Restablecer Acento',
+    'settings.diagnosticsSection': 'Diagnóstico de Motores Multimedia',
+    'settings.reinstallEngines': 'Reinstalar Motores Automáticamente',
+    'settings.denoTitle': 'Deno (Motor JS para n-sig de YouTube)',
+    'settings.detected': 'Detectado',
+    'settings.optional': 'Opcional',
+    'settings.installed': 'Instalado',
+    'settings.categoriesSection': 'Categorías Personalizadas',
+    'settings.newCategory': 'Nueva categoría...',
+    'settings.addCategory': 'Agregar',
+
+    // First Run Setup Modal
+    'setup.title': 'Configuración Inicial de Motores Multimedia',
+    'setup.subtitle': 'Vortex requiere los motores oficiales yt-dlp y FFmpeg para descargar, convertir y unir video con audio.',
+    'setup.startDownload': 'Iniciar Descarga Automática de Motores',
+    'setup.downloading': 'Instalando dependencias oficiales...',
+    'setup.readyTitle': '¡Motores configurados con éxito!',
+    'setup.readySubtitle': 'Vortex está 100% listo para descargar a máxima velocidad sin limitaciones.',
+    'setup.continue': 'Comenzar a Usar Vortex',
+    'setup.manualNote': 'La descarga e instalación se realiza en segundo plano de forma completamente automática.',
+
+    // QR Share Modal
+    'qr.title': 'Transferencia Móvil por Red Local (LAN)',
+    'qr.subtitle': 'Conéctate al mismo Wi-Fi y escanea el código con tu celular para reproducir descargas o enviar enlaces a esta PC.',
+    'qr.scanInstruction': 'Abre la cámara de tu teléfono y escanea este código QR:',
+    'qr.serverActive': 'Servidor LAN activo en el puerto 6767',
+    'qr.copied': '¡Enlace copiado al portapapeles!',
+    'qr.openBrowser': 'Abrir en navegador',
+
+    // Maintenance Modal
+    'maintenance.title': 'Mantenimiento y Respaldo',
+    'maintenance.exportBackup': 'Exportar Respaldo JSON',
+    'maintenance.exportDesc': 'Guarda un snapshot completo de tu biblioteca y configuraciones.',
+    'maintenance.importBackup': 'Restaurar Respaldo JSON',
+    'maintenance.importDesc': 'Restaura una biblioteca previamente exportada.',
+    'maintenance.reconcile': 'Reconciliar Archivos del Disco',
+    'maintenance.reconcileDesc': 'Escanea el disco para reparar enlaces si moviste o renombraste videos.',
+
+    // Command Palette
+    'palette.placeholder': 'Escribe para buscar descargas, temas o comandos...',
+    'palette.actions': 'Acciones',
+    'palette.navigation': 'Navegación',
+    'palette.themes': 'Temas Visuales',
+    'palette.downloads': 'Biblioteca de Medios',
+
+    // Notifications
+    'notif.downloadStarted': 'Descarga Iniciada',
+    'notif.downloadStartedMsg': 'Conectando con el motor Vortex...',
+    'notif.downloadFinished': '¡Descarga Finalizada!',
+    'notif.downloadFinishedMsg': 'El archivo ya está disponible en tu biblioteca.',
+    'notif.downloadError': 'Error en la descarga',
+    'notif.themeApplied': 'Tema visual aplicado con éxito.'
+  },
+
+  en: {
+    // Navbar
+    'nav.download': 'Download',
+    'nav.library': 'Library',
+    'nav.search': 'Search...',
+    'nav.engineReady': 'Engine Ready',
+    'nav.configureEngine': 'Setup Engine',
+    'nav.engineTooltipReady': 'Active engine: yt-dlp & ffmpeg operational',
+    'nav.engineTooltipNotReady': 'Click to automatically install yt-dlp and ffmpeg',
+    'nav.qrShare': 'QR Mobile Transfer',
+    'nav.maintenance': 'Maintenance & Backup',
+    'nav.settings': 'Settings & Visual Themes',
+    'nav.language': 'Select Language',
+
+    // Download Bar
+    'download.inputPlaceholder': 'Paste video or playlist link here...',
+    'download.batchPlaceholder': 'Paste one URL per line for batch download...',
+    'download.singleUrl': 'Single URL',
+    'download.batchMode': 'Batch Mode',
+    'download.paste': 'Paste',
+    'download.video': 'Video',
+    'download.audio': 'Audio Only',
+    'download.resolution': 'Resolution',
+    'download.bestQuality': 'Best Quality',
+    'download.format': 'Format',
+    'download.category': 'Category',
+    'download.noCategory': 'No category',
+    'download.sponsorblock': 'SponsorBlock (skip sponsored segments)',
+    'download.embedThumbnail': 'Embed Thumbnail',
+    'download.embedSubtitles': 'Embed Subtitles',
+    'download.browserCookies': 'Browser Cookies',
+    'download.cookiesNone': 'None',
+    'download.start': 'Start Download',
+    'download.adding': 'Adding to Queue...',
+    'download.fetchingMeta': 'Fetching media information...',
+    'download.batchCount': '{count} links detected for download',
+
+    // Active Queue
+    'queue.title': 'Active Download Queue',
+    'queue.active': 'Active',
+    'queue.speed': 'Speed',
+    'queue.eta': 'Time left',
+    'queue.cancel': 'Cancel download',
+
+    // Library
+    'library.searchPlaceholder': 'Search your library by title or URL...',
+    'library.filterAll': 'All',
+    'library.filterVideo': 'Videos',
+    'library.filterAudio': 'Audios',
+    'library.sortBy': 'Sort by',
+    'library.sortNewest': 'Newest first',
+    'library.sortOldest': 'Oldest first',
+    'library.sortName': 'Name (A-Z)',
+    'library.sortSize': 'File size',
+    'library.sortDuration': 'Duration',
+    'library.emptyTitle': 'Your library is empty',
+    'library.emptySubtitle': 'Paste a link in the Download tab to get started.',
+    'library.totalStorage': 'Total storage',
+    'library.videos': 'videos',
+    'library.audios': 'audios',
+    'library.play': 'Play',
+    'library.openFolder': 'Open Folder',
+    'library.delete': 'Delete',
+    'library.deleteConfirm': 'Do you want to delete this file from library and disk?',
+    'library.duration': 'Duration',
+    'library.size': 'Size',
+    'library.date': 'Date',
+
+    // Mini Player & Video Player
+    'player.miniNowPlaying': 'Playing in background dock',
+    'player.expand': 'Full player modal',
+    'player.close': 'Close player',
+    'player.chapters': 'Chapters',
+    'player.noChapters': 'No chapters detected',
+    'player.speed': 'Speed',
+
+    // Settings Modal
+    'settings.title': 'Vortex Settings & Customization',
+    'settings.languageSection': 'Application Language',
+    'settings.languageHelp': 'Choose user interface language',
+    'settings.themesSection': 'Unlocked Visual Themes (15)',
+    'settings.themesBadge': '100% FREE / NO PAYWALL',
+    'settings.accentSection': 'Custom Accent Color',
+    'settings.accentPlaceholder': 'Pick or type HEX color code (#00e5ff)',
+    'settings.accentReset': 'Reset Accent',
+    'settings.diagnosticsSection': 'Media Engine Diagnostics',
+    'settings.reinstallEngines': 'Reinstall Engines Automatically',
+    'settings.denoTitle': 'Deno (JS Runtime for YouTube n-sig)',
+    'settings.detected': 'Detected',
+    'settings.optional': 'Optional',
+    'settings.installed': 'Installed',
+    'settings.categoriesSection': 'Custom Categories',
+    'settings.newCategory': 'New category name...',
+    'settings.addCategory': 'Add',
+
+    // First Run Setup Modal
+    'setup.title': 'Media Engine Initial Setup',
+    'setup.subtitle': 'Vortex requires official yt-dlp and FFmpeg binaries to download, transcode, and merge high-resolution streams.',
+    'setup.startDownload': 'Start Automatic Binary Download',
+    'setup.downloading': 'Installing official dependencies...',
+    'setup.readyTitle': 'Engines successfully configured!',
+    'setup.readySubtitle': 'Vortex is 100% ready for unrestricted downloads at maximum speed.',
+    'setup.continue': 'Start Using Vortex',
+    'setup.manualNote': 'Downloads and extraction are handled autonomously in the background.',
+
+    // QR Share Modal
+    'qr.title': 'Local Network Mobile QR Transfer',
+    'qr.subtitle': 'Connect to the same Wi-Fi and scan the code with your phone to stream downloads or send links to this PC.',
+    'qr.scanInstruction': 'Open your mobile camera and scan this QR code:',
+    'qr.serverActive': 'LAN Server active on port 6767',
+    'qr.copied': 'Link copied to clipboard!',
+    'qr.openBrowser': 'Open in browser',
+
+    // Maintenance Modal
+    'maintenance.title': 'Maintenance & Backups',
+    'maintenance.exportBackup': 'Export JSON Backup',
+    'maintenance.exportDesc': 'Save a complete snapshot of your library and settings.',
+    'maintenance.importBackup': 'Restore JSON Backup',
+    'maintenance.importDesc': 'Restore a previously exported database snapshot.',
+    'maintenance.reconcile': 'Reconcile Disk Files',
+    'maintenance.reconcileDesc': 'Scan storage to repair broken links if files were moved or renamed.',
+
+    // Command Palette
+    'palette.placeholder': 'Type to search downloads, switch themes, or run actions...',
+    'palette.actions': 'Actions',
+    'palette.navigation': 'Navigation',
+    'palette.themes': 'Visual Themes',
+    'palette.downloads': 'Media Library',
+
+    // Notifications
+    'notif.downloadStarted': 'Download Started',
+    'notif.downloadStartedMsg': 'Connecting to Vortex media engine...',
+    'notif.downloadFinished': 'Download Complete!',
+    'notif.downloadFinishedMsg': 'The file is now available in your library.',
+    'notif.downloadError': 'Download Error',
+    'notif.themeApplied': 'Visual theme applied successfully.'
+  },
+
+  pt: {
+    // Navbar
+    'nav.download': 'Baixar',
+    'nav.library': 'Biblioteca',
+    'nav.search': 'Pesquisar...',
+    'nav.engineReady': 'Motor Pronto',
+    'nav.configureEngine': 'Configurar Motor',
+    'nav.engineTooltipReady': 'Motor ativo: yt-dlp e ffmpeg operacionais',
+    'nav.engineTooltipNotReady': 'Clique para instalar o yt-dlp e ffmpeg automaticamente',
+    'nav.qrShare': 'Transferência QR para Celular',
+    'nav.maintenance': 'Manutenção e Backup',
+    'nav.settings': 'Configurações e Temas Visuais',
+    'nav.language': 'Selecionar Idioma',
+
+    // Download Bar
+    'download.inputPlaceholder': 'Cole o link do vídeo ou playlist aqui...',
+    'download.batchPlaceholder': 'Cole uma URL por linha para download em lote...',
+    'download.singleUrl': 'URL Única',
+    'download.batchMode': 'Modo Lote',
+    'download.paste': 'Colar',
+    'download.video': 'Vídeo',
+    'download.audio': 'Apenas Áudio',
+    'download.resolution': 'Resolução',
+    'download.bestQuality': 'Melhor Qualidade',
+    'download.format': 'Formato',
+    'download.category': 'Categoria',
+    'download.noCategory': 'Sem categoria',
+    'download.sponsorblock': 'SponsorBlock (pular anúncios integrados)',
+    'download.embedThumbnail': 'Incorporar Miniatura',
+    'download.embedSubtitles': 'Incorporar Legendas',
+    'download.browserCookies': 'Cookies do Navegador',
+    'download.cookiesNone': 'Nenhum',
+    'download.start': 'Iniciar Download',
+    'download.adding': 'Adicionando à Fila...',
+    'download.fetchingMeta': 'Obtendo informações da mídia...',
+    'download.batchCount': '{count} links detectados para download',
+
+    // Active Queue
+    'queue.title': 'Fila de Downloads Ativa',
+    'queue.active': 'Ativos',
+    'queue.speed': 'Velocidade',
+    'queue.eta': 'Tempo restante',
+    'queue.cancel': 'Cancelar download',
+
+    // Library
+    'library.searchPlaceholder': 'Pesquisar na biblioteca por título ou URL...',
+    'library.filterAll': 'Todos',
+    'library.filterVideo': 'Vídeos',
+    'library.filterAudio': 'Áudios',
+    'library.sortBy': 'Ordenar por',
+    'library.sortNewest': 'Mais recentes',
+    'library.sortOldest': 'Mais antigos',
+    'library.sortName': 'Nome (A-Z)',
+    'library.sortSize': 'Tamanho do arquivo',
+    'library.sortDuration': 'Duração',
+    'library.emptyTitle': 'Sua biblioteca está vazia',
+    'library.emptySubtitle': 'Cole um link na aba Baixar para começar.',
+    'library.totalStorage': 'Armazenamento total',
+    'library.videos': 'vídeos',
+    'library.audios': 'áudios',
+    'library.play': 'Reproduzir',
+    'library.openFolder': 'Abrir Pasta',
+    'library.delete': 'Excluir',
+    'library.deleteConfirm': 'Deseja excluir este arquivo da biblioteca e do disco?',
+    'library.duration': 'Duração',
+    'library.size': 'Tamanho',
+    'library.date': 'Data',
+
+    // Mini Player & Video Player
+    'player.miniNowPlaying': 'Reproduzindo em segundo plano',
+    'player.expand': 'Expandir reprodutor de vídeo',
+    'player.close': 'Fechar reprodutor',
+    'player.chapters': 'Capítulos',
+    'player.noChapters': 'Nenhum capítulo detectado',
+    'player.speed': 'Velocidade',
+
+    // Settings Modal
+    'settings.title': 'Configurações e Personalização do Vortex',
+    'settings.languageSection': 'Idioma do Aplicativo',
+    'settings.languageHelp': 'Escolha o idioma da interface do usuário',
+    'settings.themesSection': 'Temas Visuais Desbloqueados (15)',
+    'settings.themesBadge': '100% GRATUITO / SEM RESTRIÇÕES',
+    'settings.accentSection': 'Cor de Destaque Personalizada',
+    'settings.accentPlaceholder': 'Escolha ou digite o código HEX (#00e5ff)',
+    'settings.accentReset': 'Restaurar Destaque',
+    'settings.diagnosticsSection': 'Diagnóstico dos Motores Multimídia',
+    'settings.reinstallEngines': 'Reinstalar Motores Automaticamente',
+    'settings.denoTitle': 'Deno (Motor JS para n-sig do YouTube)',
+    'settings.detected': 'Detectado',
+    'settings.optional': 'Opcional',
+    'settings.installed': 'Instalado',
+    'settings.categoriesSection': 'Categorias Personalizadas',
+    'settings.newCategory': 'Nome da nova categoria...',
+    'settings.addCategory': 'Adicionar',
+
+    // First Run Setup Modal
+    'setup.title': 'Configuração Inicial dos Motores Multimídia',
+    'setup.subtitle': 'O Vortex requer os binários oficiais do yt-dlp e FFmpeg para baixar, converter e unir áudio e vídeo.',
+    'setup.startDownload': 'Iniciar Download Automático de Motores',
+    'setup.downloading': 'Instalando dependências oficiais...',
+    'setup.readyTitle': 'Motores configurados com sucesso!',
+    'setup.readySubtitle': 'O Vortex está pronto para baixar em velocidade máxima sem restrições.',
+    'setup.continue': 'Começar a Usar o Vortex',
+    'setup.manualNote': 'O download e a extração ocorrem em segundo plano de forma autônoma.',
+
+    // QR Share Modal
+    'qr.title': 'Transferência Móvel por Rede Local (LAN)',
+    'qr.subtitle': 'Conecte-se ao mesmo Wi-Fi e escaneie o código com o celular para reproduzir mídias ou enviar links para o PC.',
+    'qr.scanInstruction': 'Abra a câmera do seu celular e escaneie este código QR:',
+    'qr.serverActive': 'Servidor LAN ativo na porta 6767',
+    'qr.copied': 'Link copiado para a área de transferência!',
+    'qr.openBrowser': 'Abrir no navegador',
+
+    // Maintenance Modal
+    'maintenance.title': 'Manutenção e Backup',
+    'maintenance.exportBackup': 'Exportar Backup JSON',
+    'maintenance.exportDesc': 'Salva uma cópia completa da sua biblioteca e configurações.',
+    'maintenance.importBackup': 'Restaurar Backup JSON',
+    'maintenance.importDesc': 'Restaura um backup de biblioteca exportado anteriormente.',
+    'maintenance.reconcile': 'Reconciliar Arquivos do Disco',
+    'maintenance.reconcileDesc': 'Escaneia o disco para reparar links de arquivos renomeados ou movidos.',
+
+    // Command Palette
+    'palette.placeholder': 'Digite para pesquisar downloads, mudar temas ou comandos...',
+    'palette.actions': 'Ações',
+    'palette.navigation': 'Navegação',
+    'palette.themes': 'Temas Visuais',
+    'palette.downloads': 'Biblioteca de Mídia',
+
+    // Notifications
+    'notif.downloadStarted': 'Download Iniciado',
+    'notif.downloadStartedMsg': 'Conectando ao motor Vortex...',
+    'notif.downloadFinished': 'Download Concluído!',
+    'notif.downloadFinishedMsg': 'O arquivo já está disponível em sua biblioteca.',
+    'notif.downloadError': 'Erro no download',
+    'notif.themeApplied': 'Tema visual aplicado com sucesso.'
+  },
+
+  zh: {
+    // Navbar
+    'nav.download': '下载',
+    'nav.library': '媒体库',
+    'nav.search': '搜索...',
+    'nav.engineReady': '引擎就绪',
+    'nav.configureEngine': '配置引擎',
+    'nav.engineTooltipReady': '运行引擎：yt-dlp 与 ffmpeg 运作正常',
+    'nav.engineTooltipNotReady': '点击以自动下载并安装 yt-dlp 与 ffmpeg',
+    'nav.qrShare': '移动端扫码互传',
+    'nav.maintenance': '维护与备份',
+    'nav.settings': '设置与视觉主题',
+    'nav.language': '切换语言',
+
+    // Download Bar
+    'download.inputPlaceholder': '在此粘贴视频或播放列表链接...',
+    'download.batchPlaceholder': '每行输入一个链接以进行批量下载...',
+    'download.singleUrl': '单个链接',
+    'download.batchMode': '批量模式',
+    'download.paste': '粘贴',
+    'download.video': '视频',
+    'download.audio': '仅音频',
+    'download.resolution': '分辨率',
+    'download.bestQuality': '最高画质',
+    'download.format': '格式',
+    'download.category': '分类',
+    'download.noCategory': '未分类',
+    'download.sponsorblock': 'SponsorBlock (自动跳过赞助/片头广告)',
+    'download.embedThumbnail': '嵌入封面图',
+    'download.embedSubtitles': '嵌入字幕',
+    'download.browserCookies': '浏览器 Cookie',
+    'download.cookiesNone': '无',
+    'download.start': '开始下载',
+    'download.adding': '正在加入队列...',
+    'download.fetchingMeta': '正在解析视频元数据...',
+    'download.batchCount': '已检测到 {count} 个下载链接',
+
+    // Active Queue
+    'queue.title': '当前下载队列',
+    'queue.active': '进行中',
+    'queue.speed': '下载速度',
+    'queue.eta': '剩余时间',
+    'queue.cancel': '取消下载',
+
+    // Library
+    'library.searchPlaceholder': '在媒体库中搜索标题或链接...',
+    'library.filterAll': '全部',
+    'library.filterVideo': '视频',
+    'library.filterAudio': '音频',
+    'library.sortBy': '排序方式',
+    'library.sortNewest': '最新添加',
+    'library.sortOldest': '最早添加',
+    'library.sortName': '名称 (A-Z)',
+    'library.sortSize': '文件大小',
+    'library.sortDuration': '视频时长',
+    'library.emptyTitle': '媒体库为空',
+    'library.emptySubtitle': '在“下载”选项卡中粘贴链接即可开始。',
+    'library.totalStorage': '总存储占用',
+    'library.videos': '个视频',
+    'library.audios': '个音频',
+    'library.play': '播放',
+    'library.openFolder': '打开所在文件夹',
+    'library.delete': '删除',
+    'library.deleteConfirm': '确定要从媒体库和磁盘中永久删除此文件吗？',
+    'library.duration': '时长',
+    'library.size': '大小',
+    'library.date': '日期',
+
+    // Mini Player & Video Player
+    'player.miniNowPlaying': '正在后台播放',
+    'player.expand': '展开视频播放器',
+    'player.close': '关闭播放器',
+    'player.chapters': '视频章节',
+    'player.noChapters': '未检测到章节信息',
+    'player.speed': '播放倍速',
+
+    // Settings Modal
+    'settings.title': 'Vortex 设置与个性化',
+    'settings.languageSection': '界面语言 (Language)',
+    'settings.languageHelp': '选择软件界面的显示语言',
+    'settings.themesSection': '解锁的 15 款视觉主题',
+    'settings.themesBadge': '100% 免费 / 无内购限制',
+    'settings.accentSection': '自定义强调色',
+    'settings.accentPlaceholder': '输入 HEX 颜色代码 (#00e5ff)',
+    'settings.accentReset': '重置强调色',
+    'settings.diagnosticsSection': '多媒体引擎检测',
+    'settings.reinstallEngines': '自动重新安装引擎',
+    'settings.denoTitle': 'Deno (针对 YouTube n-sig 加速的 JS 运行环境)',
+    'settings.detected': '已检测到',
+    'settings.optional': '可选',
+    'settings.installed': '已安装',
+    'settings.categoriesSection': '自定义分类',
+    'settings.newCategory': '新分类名称...',
+    'settings.addCategory': '添加',
+
+    // First Run Setup Modal
+    'setup.title': '多媒体引擎初始配置',
+    'setup.subtitle': 'Vortex 需要官方 yt-dlp 与 FFmpeg 核心引擎来进行视频解析、转码与音视频合并。',
+    'setup.startDownload': '开始自动下载引擎',
+    'setup.downloading': '正在下载官方运行依赖...',
+    'setup.readyTitle': '多媒体引擎配置成功！',
+    'setup.readySubtitle': 'Vortex 已经 100% 准备就绪，可以全速下载任何媒体。',
+    'setup.continue': '立即开始使用 Vortex',
+    'setup.manualNote': '所有下载和解压缩过程都在后台全自动完成。',
+
+    // QR Share Modal
+    'qr.title': '局域网移动端 QR 扫码互传',
+    'qr.subtitle': '手机与电脑连接同一 Wi-Fi，扫码即可在手机上播放或下载内容，亦可从手机推送链接至电脑。',
+    'qr.scanInstruction': '使用手机相机扫描下方二维码：',
+    'qr.serverActive': '局域网服务运行于端口 6767',
+    'qr.copied': '链接已复制到剪贴板！',
+    'qr.openBrowser': '在浏览器中打开',
+
+    // Maintenance Modal
+    'maintenance.title': '系统维护与数据库备份',
+    'maintenance.exportBackup': '导出 JSON 备份',
+    'maintenance.exportDesc': '保存完整的媒体库记录与自定义配置快照。',
+    'maintenance.importBackup': '恢复 JSON 备份',
+    'maintenance.importDesc': '从先前的备份文件中恢复媒体库。',
+    'maintenance.reconcile': '核对并修复磁盘文件',
+    'maintenance.reconcileDesc': '扫描磁盘以修复由于移动或重命名导致的文件关联失效。',
+
+    // Command Palette
+    'palette.placeholder': '输入文字以搜索媒体库、切换主题或执行快捷操作...',
+    'palette.actions': '快捷操作',
+    'palette.navigation': '页面导航',
+    'palette.themes': '视觉主题',
+    'palette.downloads': '媒体库内容',
+
+    // Notifications
+    'notif.downloadStarted': '下载已开始',
+    'notif.downloadStartedMsg': '正在连接 Vortex 核心引擎...',
+    'notif.downloadFinished': '下载已完成！',
+    'notif.downloadFinishedMsg': '文件已保存，可随时在媒体库中查看。',
+    'notif.downloadError': '下载失败',
+    'notif.themeApplied': '视觉主题切换成功。'
+  }
+} as const;
+
+export type TranslationKey = keyof typeof translations.es;

@@ -24,6 +24,7 @@ import {
   X
 } from 'lucide-react';
 import { DownloadItem, PointOfInterest, SubtitleTrack } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface VideoPlayerModalProps {
   item: DownloadItem | null;
@@ -31,6 +32,7 @@ interface VideoPlayerModalProps {
 }
 
 export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ item, onClose }) => {
+  const { t } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [chapters, setChapters] = useState<PointOfInterest[]>([]);
   const [subtitles, setSubtitles] = useState<SubtitleTrack[]>([]);
@@ -195,19 +197,19 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ item, onClos
               </Group>
 
               <Group gap="xs" align="center">
-                <Text size="xs" c="dimmed">Velocidad:</Text>
+                <Text size="xs" c="dimmed">{t('player.speed')}:</Text>
                 <Select
                   size="xs"
                   value={playbackRate}
                   onChange={handleRateChange}
                   data={[
                     { value: '0.75', label: '0.75x' },
-                    { value: '1', label: '1.0x Normal' },
+                    { value: '1', label: '1.0x' },
                     { value: '1.25', label: '1.25x' },
                     { value: '1.5', label: '1.5x' },
                     { value: '2', label: '2.0x' },
                   ]}
-                  style={{ width: 110 }}
+                  style={{ width: 100 }}
                 />
               </Group>
             </Group>

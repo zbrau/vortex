@@ -25,6 +25,7 @@ import {
   Film
 } from 'lucide-react';
 import { DownloadItem } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface MiniPlayerBarProps {
   item: DownloadItem | null;
@@ -39,6 +40,7 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
   onExpandToVideo,
   accentColor = '#ff2a85'
 }) => {
+  const { t } = useLanguage();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -300,7 +302,7 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
           </Group>
 
           {isVideo && (
-            <Tooltip label="Expandir a Pantalla Completa / Video">
+            <Tooltip label={t('player.expand')}>
               <ActionIcon
                 variant="light"
                 color="pink"
@@ -313,13 +315,13 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
             </Tooltip>
           )}
 
-          <Tooltip label="Abrir con Reproductor del Sistema">
+          <Tooltip label="App Externa">
             <ActionIcon variant="subtle" color="gray" radius="md" size="md" onClick={handleOpenExternal}>
               <ExternalLink size={16} />
             </ActionIcon>
           </Tooltip>
 
-          <Tooltip label="Cerrar reproductor">
+          <Tooltip label={t('player.close')}>
             <ActionIcon variant="subtle" color="gray" radius="md" size="md" onClick={onClose}>
               <X size={16} />
             </ActionIcon>

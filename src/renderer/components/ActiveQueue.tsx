@@ -2,6 +2,7 @@ import React from 'react';
 import { Paper, Group, Text, Progress, Button, Stack, Badge, ActionIcon } from '@mantine/core';
 import { X, ArrowDown, Clock, Gauge } from 'lucide-react';
 import { DownloadProgress } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ActiveQueueProps {
   progressList: DownloadProgress[];
@@ -9,6 +10,7 @@ interface ActiveQueueProps {
 }
 
 export const ActiveQueue: React.FC<ActiveQueueProps> = ({ progressList, onCancel }) => {
+  const { t } = useLanguage();
   const activeItems = progressList.filter(p => p.status === 'downloading');
 
   if (activeItems.length === 0) return null;
@@ -16,7 +18,7 @@ export const ActiveQueue: React.FC<ActiveQueueProps> = ({ progressList, onCancel
   return (
     <Stack gap="sm" mt="md">
       <Text size="sm" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: '0.8px' }}>
-        Descargas en Curso ({activeItems.length})
+        {t('queue.title')} ({activeItems.length})
       </Text>
 
       {activeItems.map(item => (
@@ -30,7 +32,7 @@ export const ActiveQueue: React.FC<ActiveQueueProps> = ({ progressList, onCancel
             <Group justify="space-between">
               <Group gap="xs">
                 <Badge color="pink" variant="dot">
-                  Descargando
+                  {t('queue.active')}
                 </Badge>
                 {item.totalSize && (
                   <Badge size="xs" color="gray" variant="light">
@@ -57,7 +59,7 @@ export const ActiveQueue: React.FC<ActiveQueueProps> = ({ progressList, onCancel
                   color="red"
                   variant="subtle"
                   onClick={() => onCancel(item.id)}
-                  title="Cancelar descarga"
+                  title={t('queue.cancel')}
                 >
                   <X size={14} />
                 </ActionIcon>

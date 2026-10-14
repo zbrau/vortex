@@ -14,6 +14,7 @@ import { MaintenanceModal } from './components/MaintenanceModal';
 import { MiniPlayerBar } from './components/MiniPlayerBar';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { FirstRunSetupModal } from './components/FirstRunSetupModal';
+import { useLanguage } from './i18n/LanguageContext';
 
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -21,6 +22,7 @@ import '@mantine/notifications/styles.css';
 const getApi = () => window.vortexAPI || window.smasherAPI;
 
 export const App: React.FC = () => {
+  const { t } = useLanguage();
   const [currentTheme, setCurrentTheme] = useState<ThemePreset>(() => {
     return (localStorage.getItem('vortex_theme') as ThemePreset) ||
            (localStorage.getItem('smasher_theme') as ThemePreset) ||
@@ -119,15 +121,15 @@ export const App: React.FC = () => {
 
         if (data.status === 'completed') {
           notifications.show({
-            title: '¡Descarga Finalizada!',
-            message: 'El archivo está disponible en tu biblioteca.',
+            title: t('notif.downloadFinished'),
+            message: t('notif.downloadFinishedMsg'),
             color: 'teal'
           });
           refreshLibrary();
         } else if (data.status === 'error') {
           notifications.show({
-            title: 'Error en la descarga',
-            message: data.error || 'Ocurrió un error con el motor de descarga',
+            title: t('notif.downloadError'),
+            message: data.error || 'Download error',
             color: 'red'
           });
           refreshLibrary();
@@ -148,15 +150,15 @@ export const App: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [refreshBinaryStatus, refreshLibrary, refreshCategories]);
+  }, [refreshBinaryStatus, refreshLibrary, refreshCategories, t]);
 
   const handleStartDownload = async (options: DownloadOptions) => {
     const api = getApi();
     if (api) {
       await api.startDownload(options);
       notifications.show({
-        title: 'Descarga Iniciada',
-        message: 'Conectando con el motor Vortex...',
+        title: t('notif.downloadStarted'),
+        message: t('notif.downloadStartedMsg'),
         color: 'pink'
       });
       refreshLibrary();

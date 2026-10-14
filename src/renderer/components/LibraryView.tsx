@@ -36,6 +36,7 @@ import {
   ArrowUpDown
 } from 'lucide-react';
 import { DownloadItem, Category } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface LibraryViewProps {
   items: DownloadItem[];
@@ -56,6 +57,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   onPlayItem,
   onRefetchMeta
 }) => {
+  const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [typeFilter, setTypeFilter] = useState<'all' | 'video' | 'audio'>('all');
@@ -122,28 +124,28 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
             <Group gap="xs">
               <Film size={18} color="#ff2a85" />
               <Text size="sm" fw={600}>
-                {videoCount} <span style={{ opacity: 0.6 }}>Videos</span>
+                {videoCount} <span style={{ opacity: 0.6 }}>{t('library.videos')}</span>
               </Text>
             </Group>
 
             <Group gap="xs">
               <Music size={18} color="#00f0ff" />
               <Text size="sm" fw={600}>
-                {audioCount} <span style={{ opacity: 0.6 }}>Canciones</span>
+                {audioCount} <span style={{ opacity: 0.6 }}>{t('library.audios')}</span>
               </Text>
             </Group>
 
             <Group gap="xs">
               <HardDrive size={18} color="#10b981" />
               <Text size="sm" fw={600}>
-                {formatBytes(totalBytes)} <span style={{ opacity: 0.6 }}>en Disco</span>
+                {formatBytes(totalBytes)} <span style={{ opacity: 0.6 }}>({t('library.totalStorage')})</span>
               </Text>
             </Group>
           </Group>
 
           <Group gap="xs">
             <Badge size="sm" variant="dot" color="teal">
-              Base de Datos SQLite Activa
+              SQLite
             </Badge>
           </Group>
         </Group>
@@ -161,7 +163,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         <Stack gap="sm">
           <Group justify="space-between" align="center" wrap="wrap">
             <TextInput
-              placeholder="Buscar descargas..."
+              placeholder={t('library.searchPlaceholder')}
               leftSection={<Search size={16} />}
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -177,9 +179,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               size="xs"
               radius="md"
               data={[
-                { value: 'all', label: `Todos (${items.length})` },
-                { value: 'video', label: `Videos (${videoCount})` },
-                { value: 'audio', label: `Música (${audioCount})` }
+                { value: 'all', label: `${t('library.filterAll')} (${items.length})` },
+                { value: 'video', label: `${t('library.filterVideo')} (${videoCount})` },
+                { value: 'audio', label: `${t('library.filterAudio')} (${audioCount})` }
               ]}
             />
 
@@ -192,11 +194,11 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               style={{ width: 170 }}
               radius="md"
               data={[
-                { value: 'newest', label: 'Más recientes' },
-                { value: 'oldest', label: 'Más antiguos' },
-                { value: 'name', label: 'Nombre (A-Z)' },
-                { value: 'size', label: 'Mayor tamaño' },
-                { value: 'duration', label: 'Mayor duración' },
+                { value: 'newest', label: t('library.sortNewest') },
+                { value: 'oldest', label: t('library.sortOldest') },
+                { value: 'name', label: t('library.sortName') },
+                { value: 'size', label: t('library.sortSize') },
+                { value: 'duration', label: t('library.sortDuration') },
               ]}
             />
 
@@ -257,8 +259,11 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         <Center py={60}>
           <Stack align="center" gap="xs">
             <Inbox size={48} strokeWidth={1.5} color="rgba(255,255,255,0.2)" />
-            <Text c="dimmed" size="sm">
-              No se encontraron descargas con los filtros aplicados.
+            <Text fw={600} size="sm">
+              {t('library.emptyTitle')}
+            </Text>
+            <Text c="dimmed" size="xs">
+              {t('library.emptySubtitle')}
             </Text>
           </Stack>
         </Center>
@@ -361,7 +366,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
 
                 <Group justify="space-between" mt="md" pt="xs" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                   <Group gap="xs">
-                    <Tooltip label="Reproducir">
+                    <Tooltip label={t('library.play')}>
                       <ActionIcon
                         variant="filled"
                         color="pink"
@@ -373,7 +378,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                       </ActionIcon>
                     </Tooltip>
 
-                    <Tooltip label="Abrir con App Externa">
+                    <Tooltip label={t('library.play')}>
                       <ActionIcon
                         variant="subtle"
                         color="gray"
@@ -386,7 +391,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                       </ActionIcon>
                     </Tooltip>
 
-                    <Tooltip label="Mostrar en carpeta">
+                    <Tooltip label={t('library.openFolder')}>
                       <ActionIcon
                         variant="subtle"
                         color="gray"
@@ -399,7 +404,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                       </ActionIcon>
                     </Tooltip>
 
-                    <Tooltip label="Actualizar Metadatos y Capítulos">
+                    <Tooltip label="Metadatos">
                       <ActionIcon
                         variant="subtle"
                         color="gray"
@@ -412,7 +417,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                     </Tooltip>
                   </Group>
 
-                  <Tooltip label="Eliminar de biblioteca">
+                  <Tooltip label={t('library.delete')}>
                     <ActionIcon
                       variant="subtle"
                       color="red"
