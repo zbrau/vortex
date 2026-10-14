@@ -137,7 +137,7 @@ public class VortexDownloaderPlugin extends Plugin {
     public void updateEngine(PluginCall call) {
         executor.execute(() -> {
             try {
-                Object res = YoutubeDL.getInstance().updateYoutubeDL(getContext(), YoutubeDL.UpdateChannel.STABLE);
+                Object res = YoutubeDL.getInstance().updateYoutubeDL(getContext());
                 JSObject ret = new JSObject();
                 ret.put("success", true);
                 ret.put("status", String.valueOf(res));
