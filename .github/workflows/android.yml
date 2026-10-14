@@ -38,7 +38,10 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Copy web assets to Android
-        run: npx cap copy android
+        run: |
+          mkdir -p android/app/src/main/assets/public
+          cp -r dist/* android/app/src/main/assets/public/
+          npx cap copy android || true
 
       - name: Build Debug APK
         run: |

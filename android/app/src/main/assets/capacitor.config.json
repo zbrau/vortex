@@ -1,0 +1,8 @@
+{
+	"appId": "com.vortex.app",
+	"appName": "Vortex",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}
