@@ -48,7 +48,12 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace --info > ../gradle.log 2>&1 || (echo "=== GRADLE FAILURE ===" && grep -E "error:|FAILURE:|FAILED|Exception:" -A 8 ../gradle.log | head -n 120 && exit 1)
+          if ! ./gradlew assembleDebug --stacktrace --info > ../gradle.log 2>&1; then
+            ERR_MSG=$(grep -i -E "error:|FAILURE:|FAILED" ../gradle.log | head -n 8 | tr '\n' ' ' | cut -c 1-500)
+            echo "::error title=Gradle Error::$ERR_MSG"
+            tail -n 120 ../gradle.log
+            exit 1
+          fi
           mkdir -p ../dist-apk
           find . -name "*.apk" -exec cp -v {} ../dist-apk/ \;
           ls -la ../dist-apk/
