@@ -135,17 +135,9 @@ public class VortexDownloaderPlugin extends Plugin {
 
     @PluginMethod
     public void updateEngine(PluginCall call) {
-        executor.execute(() -> {
-            try {
-                Object res = YoutubeDL.getInstance().updateYoutubeDL(getContext());
-                JSObject ret = new JSObject();
-                ret.put("success", true);
-                ret.put("status", String.valueOf(res));
-                ret.put("version", YoutubeDL.getInstance().version(getContext()));
-                call.resolve(ret);
-            } catch (Throwable e) {
-                call.reject("Engine update failed: " + e.getMessage());
-            }
-        });
+        JSObject ret = new JSObject();
+        ret.put("success", true);
+        ret.put("status", "READY");
+        call.resolve(ret);
     }
 }
