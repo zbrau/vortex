@@ -7,10 +7,12 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.yausername.youtubedl.YoutubeDL;
-import com.yausername.youtubedl.YoutubeDLRequest;
-import com.yausername.youtubedl.YoutubeDLResponse;
-import com.yausername.ffmpeg.FFmpeg;
+import com.yausername.youtubedl_android.YoutubeDL;
+import com.yausername.youtubedl_android.YoutubeDLRequest;
+import com.yausername.youtubedl_android.YoutubeDLResponse;
+import com.yausername.youtubedl_android.YoutubeDLException;
+import com.yausername.youtubedl_android.FFmpeg;
+import com.yausername.youtubedl_android.DownloadProgressCallback;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
@@ -98,15 +100,16 @@ public class VortexDownloaderPlugin extends Plugin {
                     request.addOption("--merge-output-format", "mp4");
                 }
 
-                YoutubeDLResponse response = YoutubeDL.getInstance().execute(request, id, (progress, etaInSeconds, line) -> {
+                DownloadProgressCallback callback = (progress, etaInSeconds) -> {
                     JSObject progressData = new JSObject();
                     progressData.put("id", id);
                     progressData.put("status", "downloading");
                     progressData.put("percent", (double) progress);
                     progressData.put("eta", etaInSeconds + "s");
-                    progressData.put("line", line);
                     notifyListeners("onProgress", progressData);
-                });
+                };
+
+                YoutubeDLResponse response = YoutubeDL.getInstance().execute(request, id, callback);
 
                 JSObject finishData = new JSObject();
                 finishData.put("id", id);
@@ -138,10 +141,10 @@ public class VortexDownloaderPlugin extends Plugin {
     public void updateEngine(PluginCall call) {
         executor.execute(() -> {
             try {
-                YoutubeDL.UpdateStatus status = YoutubeDL.getInstance().updateYoutubeDL(getContext());
+                Object res = YoutubeDL.getInstance().updateYoutubeDL(getContext());
                 JSObject ret = new JSObject();
                 ret.put("success", true);
-                ret.put("status", status.name());
+                ret.put("status", String.valueOf(res));
                 ret.put("version", YoutubeDL.getInstance().version(getContext()));
                 call.resolve(ret);
             } catch (Exception e) {
