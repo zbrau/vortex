@@ -19,7 +19,7 @@ import {
   FolderPlus,
   Pipette,
   DownloadCloud,
-  Globe
+  Languages
 } from 'lucide-react';
 import { ThemePreset, SystemBinariesStatus, Category } from '../types';
 import { themes } from '../theme/themes';
@@ -76,11 +76,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       radius="lg"
     >
       <Stack gap="lg">
-        {/* Language Selection Section */}
+        {/* Language Selection Section (Zero Emojis, Pure SVG & Typography) */}
         <div>
           <Group justify="space-between" mb="xs">
             <Group gap="xs">
-              <Globe size={16} color="#00e5ff" />
+              <Languages size={16} color="#00e5ff" strokeWidth={2.2} />
               <Text size="sm" fw={700}>{t('settings.languageSection')}</Text>
             </Group>
             <Text size="xs" c="dimmed">{t('settings.languageHelp')}</Text>
@@ -95,7 +95,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 size="xs"
                 radius="md"
                 onClick={() => setLanguage(l.code)}
-                leftSection={<span style={{ fontSize: 16 }}>{l.flag}</span>}
+                leftSection={
+                  <Badge
+                    size="xs"
+                    variant={language === l.code ? 'white' : 'light'}
+                    color={language === l.code ? 'dark' : 'gray'}
+                    style={{ fontWeight: 800, width: 28, padding: 0, textAlign: 'center', fontSize: 10 }}
+                  >
+                    {l.shortCode}
+                  </Badge>
+                }
                 style={{
                   border: language === l.code ? '1px solid #00e5ff' : '1px solid rgba(255,255,255,0.06)',
                   fontWeight: language === l.code ? 700 : 500

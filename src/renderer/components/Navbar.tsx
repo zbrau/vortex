@@ -20,7 +20,8 @@ import {
   Wrench,
   Settings,
   Search,
-  Globe
+  Languages,
+  Check
 } from 'lucide-react';
 import { SystemBinariesStatus } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -139,7 +140,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {t('nav.search')}
         </Button>
 
-        {/* Language Selector Dropdown */}
+        {/* Language Selector Dropdown (Zero Emojis, Pure SVG & Typography) */}
         <Menu shadow="md" width={180} position="bottom-end" radius="md">
           <Menu.Target>
             <Tooltip label={t('nav.language')}>
@@ -148,7 +149,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 size="xs"
                 radius="md"
                 color="gray"
-                leftSection={<Globe size={15} color="#00e5ff" />}
+                leftSection={<Languages size={15} color="#00e5ff" strokeWidth={2.2} />}
                 style={{
                   background: 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(255,255,255,0.06)',
@@ -157,8 +158,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   paddingRight: 10
                 }}
               >
-                <Text size="xs" fw={700}>
-                  {languages.find(l => l.code === language)?.flag} {language.toUpperCase()}
+                <Text size="xs" fw={700} style={{ letterSpacing: '0.8px' }}>
+                  {language.toUpperCase()}
                 </Text>
               </Button>
             </Tooltip>
@@ -170,7 +171,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Menu.Item
                 key={l.code}
                 onClick={() => setLanguage(l.code)}
-                leftSection={<span style={{ fontSize: 16 }}>{l.flag}</span>}
+                leftSection={
+                  <Badge
+                    size="xs"
+                    variant={language === l.code ? 'filled' : 'outline'}
+                    color={language === l.code ? 'cyan' : 'gray'}
+                    style={{ width: 26, height: 18, padding: 0, textAlign: 'center', fontWeight: 800, fontSize: 9 }}
+                  >
+                    {l.shortCode}
+                  </Badge>
+                }
+                rightSection={language === l.code ? <Check size={14} color="#00e5ff" strokeWidth={2.5} /> : undefined}
                 style={{
                   fontWeight: language === l.code ? 700 : 500,
                   color: language === l.code ? '#00e5ff' : 'inherit',

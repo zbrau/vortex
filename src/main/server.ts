@@ -400,7 +400,7 @@ export class VortexQrServer {
       const msg = document.getElementById('msg');
       if (data.success) {
         msg.style.display = 'block';
-        msg.innerText = '✅ ¡Enviado a tu PC! Descargando...';
+        msg.innerText = '[OK] ¡Enviado a tu PC! Descargando...';
         document.getElementById('urlInput').value = '';
         setTimeout(() => { msg.style.display = 'none'; }, 3000);
         loadLibrary();

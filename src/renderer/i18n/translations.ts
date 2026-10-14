@@ -2,16 +2,16 @@ export type SupportedLanguage = 'es' | 'en' | 'pt' | 'zh';
 
 export interface LanguageOption {
   code: SupportedLanguage;
+  shortCode: string;
   label: string;
   nativeLabel: string;
-  flag: string;
 }
 
 export const supportedLanguages: LanguageOption[] = [
-  { code: 'es', label: 'Español', nativeLabel: 'Español', flag: '🇪🇸' },
-  { code: 'en', label: 'English', nativeLabel: 'English', flag: '🇺🇸' },
-  { code: 'pt', label: 'Português', nativeLabel: 'Português', flag: '🇧🇷' },
-  { code: 'zh', label: 'Chino Mandarín', nativeLabel: '简体中文', flag: '🇨🇳' }
+  { code: 'es', shortCode: 'ES', label: 'Español', nativeLabel: 'Español' },
+  { code: 'en', shortCode: 'EN', label: 'English', nativeLabel: 'English' },
+  { code: 'pt', shortCode: 'PT', label: 'Português', nativeLabel: 'Português' },
+  { code: 'zh', shortCode: 'ZH', label: 'Chino Mandarín', nativeLabel: '简体中文' }
 ];
 
 export const translations = {
