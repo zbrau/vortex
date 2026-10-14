@@ -60,7 +60,7 @@
     },
     "msi": {
       "oneClick": false,
-      "perMachine": false,
+      "perMachine": true,
       "runAfterFinish": true
     }
   },
