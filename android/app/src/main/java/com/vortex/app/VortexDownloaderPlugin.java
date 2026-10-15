@@ -124,7 +124,7 @@ public class VortexDownloaderPlugin extends Plugin {
                 request.addOption("--restrict-filenames");
                 request.addOption("--no-check-certificates");
                 request.addOption("--no-update");
-                request.addOption("--extractor-args", "youtube:player-client=visionos,tv_samsung,android_vr,web;formats=missing_pot");
+                request.addOption("--extractor-args", "youtube:player-client=ios,mweb");
 
                 try {
                     File ffmpegDir = new File(new File(getContext().getNoBackupFilesDir(), "youtubedl-android/packages"), "ffmpeg");
@@ -266,7 +266,7 @@ public class VortexDownloaderPlugin extends Plugin {
                 YoutubeDLRequest request = new YoutubeDLRequest(url.trim());
                 request.addOption("--no-playlist");
                 request.addOption("--no-check-certificates");
-                request.addOption("--extractor-args", "youtube:player-client=visionos,tv_samsung,android_vr,web;formats=missing_pot");
+                request.addOption("--extractor-args", "youtube:player-client=ios,mweb");
                 VideoInfo info = YoutubeDL.getInstance().getInfo(request);
 
                 JSObject ret = new JSObject();
