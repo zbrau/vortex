@@ -43,6 +43,12 @@ public class VortexDownloaderPlugin extends Plugin {
     private synchronized void ensureInitialized() throws YoutubeDLException {
         if (!isInitialized) {
             YoutubeDL.getInstance().init(getContext());
+            try {
+                com.yausername.ffmpeg.FFmpeg.getInstance().init(getContext());
+                Log.i(TAG, "FFmpeg initialized successfully");
+            } catch (Exception e) {
+                Log.w(TAG, "FFmpeg initialization warning: " + e.getMessage());
+            }
             isInitialized = true;
         }
     }
@@ -118,6 +124,13 @@ public class VortexDownloaderPlugin extends Plugin {
                 request.addOption("--no-check-certificates");
                 request.addOption("--no-update");
                 request.addOption("--extractor-args", "youtube:player-client=visionos,tv_samsung,android_vr,web;formats=missing_pot");
+
+                try {
+                    File ffmpegDir = new File(new File(getContext().getNoBackupFilesDir(), "youtubedl-android/packages"), "ffmpeg");
+                    if (ffmpegDir.exists()) {
+                        request.addOption("--ffmpeg-location", ffmpegDir.getAbsolutePath());
+                    }
+                } catch (Exception ignored) {}
 
                 if ("audio_mp3".equals(format)) {
                     request.addOption("-x");
