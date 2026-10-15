@@ -3,9 +3,9 @@ package com.vortex.app;
 import android.os.Bundle;
 import android.util.Log;
 import com.getcapacitor.BridgeActivity;
-import com.yausername.youtubedl_android.UpdateChannel;
 import com.yausername.youtubedl_android.YoutubeDL;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends BridgeActivity {
@@ -20,9 +20,21 @@ public class MainActivity extends BridgeActivity {
             try {
                 YoutubeDL.getInstance().init(getApplicationContext());
                 Log.i(TAG, "YoutubeDL pre-initialized successfully");
+
                 try {
-                    YoutubeDL.getInstance().updateYoutubeDL(getApplicationContext(), UpdateChannel.STABLE);
-                    Log.i(TAG, "YoutubeDL updated to latest stable release");
+                    for (Method m : YoutubeDL.getInstance().getClass().getMethods()) {
+                        if (m.getName().equals("updateYoutubeDL")) {
+                            Class<?>[] pTypes = m.getParameterTypes();
+                            if (pTypes.length == 2 && pTypes[1].isEnum()) {
+                                Object[] constants = pTypes[1].getEnumConstants();
+                                if (constants != null && constants.length > 0) {
+                                    m.invoke(YoutubeDL.getInstance(), getApplicationContext(), constants[0]);
+                                    Log.i(TAG, "YoutubeDL updated to latest stable version");
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 } catch (Exception ue) {
                     Log.w(TAG, "YoutubeDL background update warning: " + ue.getMessage());
                 }

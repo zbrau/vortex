@@ -7,7 +7,6 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.yausername.youtubedl_android.UpdateChannel;
 import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 import com.yausername.youtubedl_android.YoutubeDLResponse;
@@ -15,6 +14,7 @@ import com.yausername.youtubedl_android.YoutubeDLException;
 import kotlin.Unit;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -173,9 +173,22 @@ public class VortexDownloaderPlugin extends Plugin {
         executor.execute(() -> {
             try {
                 ensureInitialized();
-                YoutubeDL.getInstance().updateYoutubeDL(getContext(), UpdateChannel.STABLE);
+                boolean updated = false;
+                for (Method m : YoutubeDL.getInstance().getClass().getMethods()) {
+                    if (m.getName().equals("updateYoutubeDL")) {
+                        Class<?>[] pTypes = m.getParameterTypes();
+                        if (pTypes.length == 2 && pTypes[1].isEnum()) {
+                            Object[] constants = pTypes[1].getEnumConstants();
+                            if (constants != null && constants.length > 0) {
+                                m.invoke(YoutubeDL.getInstance(), getContext(), constants[0]);
+                                updated = true;
+                                break;
+                            }
+                        }
+                    }
+                }
                 JSObject ret = new JSObject();
-                ret.put("success", true);
+                ret.put("success", updated);
                 ret.put("version", YoutubeDL.getInstance().version(getContext()));
                 call.resolve(ret);
             } catch (Exception e) {
