@@ -5,7 +5,6 @@ import android.util.Log;
 import com.getcapacitor.BridgeActivity;
 import com.yausername.youtubedl_android.YoutubeDL;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends BridgeActivity {
@@ -22,32 +21,8 @@ public class MainActivity extends BridgeActivity {
                 Log.i(TAG, "YoutubeDL pre-initialized successfully");
 
                 try {
-                    for (Method m : YoutubeDL.getInstance().getClass().getMethods()) {
-                        if (m.getName().equals("updateYoutubeDL")) {
-                            Class<?>[] pTypes = m.getParameterTypes();
-                            Class<?> channelClass = pTypes[1];
-                            Object channelObj = null;
-                            try {
-                                java.lang.reflect.Field f = channelClass.getField("STABLE");
-                                channelObj = f.get(null);
-                            } catch (Exception ignored) {}
-                            if (channelObj == null) {
-                                try {
-                                    java.lang.reflect.Field f = channelClass.getField("NIGHTLY");
-                                    channelObj = f.get(null);
-                                } catch (Exception ignored) {}
-                            }
-                            if (channelObj == null && channelClass.getEnumConstants() != null) {
-                                Object[] enums = channelClass.getEnumConstants();
-                                if (enums.length > 0) channelObj = enums[0];
-                            }
-                            if (channelObj != null) {
-                                m.invoke(YoutubeDL.getInstance(), getApplicationContext(), channelObj);
-                                Log.i(TAG, "YoutubeDL updated to latest stable version");
-                                break;
-                            }
-                        }
-                    }
+                    YoutubeDL.getInstance().updateYoutubeDL(getApplicationContext(), YoutubeDL.UpdateChannel.NIGHTLY.INSTANCE);
+                    Log.i(TAG, "YoutubeDL updated to latest NIGHTLY release");
                 } catch (Exception ue) {
                     Log.w(TAG, "YoutubeDL background update warning: " + ue.getMessage());
                 }

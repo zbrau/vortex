@@ -14,7 +14,6 @@ import com.yausername.youtubedl_android.YoutubeDLException;
 import kotlin.Unit;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,6 +22,23 @@ public class VortexDownloaderPlugin extends Plugin {
     private static final String TAG = "VortexDownloader";
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private boolean isInitialized = false;
+    private static volatile boolean engineUpdateTriggered = false;
+
+    private void ensureEngineUpdated() {
+        if (!engineUpdateTriggered) {
+            synchronized (VortexDownloaderPlugin.class) {
+                if (!engineUpdateTriggered) {
+                    engineUpdateTriggered = true;
+                    try {
+                        YoutubeDL.getInstance().updateYoutubeDL(getContext(), YoutubeDL.UpdateChannel.NIGHTLY.INSTANCE);
+                        Log.i(TAG, "YoutubeDL engine updated to NIGHTLY");
+                    } catch (Exception e) {
+                        Log.w(TAG, "Engine update warning: " + e.getMessage());
+                    }
+                }
+            }
+        }
+    }
 
     private synchronized void ensureInitialized() throws YoutubeDLException {
         if (!isInitialized) {
@@ -73,6 +89,7 @@ public class VortexDownloaderPlugin extends Plugin {
         executor.execute(() -> {
             try {
                 ensureInitialized();
+                ensureEngineUpdated();
 
                 File vortexFolder = null;
                 try {
@@ -100,7 +117,7 @@ public class VortexDownloaderPlugin extends Plugin {
                 request.addOption("--restrict-filenames");
                 request.addOption("--no-check-certificates");
                 request.addOption("--no-update");
-                request.addOption("--extractor-args", "youtube:player-client=tv,tv_embedded,mweb;formats=missing_pot");
+                request.addOption("--extractor-args", "youtube:player-client=visionos,tv_samsung,android_vr,web;formats=missing_pot");
 
                 if ("audio_mp3".equals(format)) {
                     request.addOption("-x");
@@ -173,35 +190,10 @@ public class VortexDownloaderPlugin extends Plugin {
         executor.execute(() -> {
             try {
                 ensureInitialized();
-                boolean updated = false;
-                for (Method m : YoutubeDL.getInstance().getClass().getMethods()) {
-                    if (m.getName().equals("updateYoutubeDL")) {
-                        Class<?>[] pTypes = m.getParameterTypes();
-                        Class<?> channelClass = pTypes[1];
-                        Object channelObj = null;
-                        try {
-                            java.lang.reflect.Field f = channelClass.getField("STABLE");
-                            channelObj = f.get(null);
-                        } catch (Exception ignored) {}
-                        if (channelObj == null) {
-                            try {
-                                java.lang.reflect.Field f = channelClass.getField("NIGHTLY");
-                                channelObj = f.get(null);
-                            } catch (Exception ignored) {}
-                        }
-                        if (channelObj == null && channelClass.getEnumConstants() != null) {
-                            Object[] enums = channelClass.getEnumConstants();
-                            if (enums.length > 0) channelObj = enums[0];
-                        }
-                        if (channelObj != null) {
-                            m.invoke(YoutubeDL.getInstance(), getContext(), channelObj);
-                            updated = true;
-                            break;
-                        }
-                    }
-                }
+                YoutubeDL.getInstance().updateYoutubeDL(getContext(), YoutubeDL.UpdateChannel.NIGHTLY.INSTANCE);
+                engineUpdateTriggered = true;
                 JSObject ret = new JSObject();
-                ret.put("success", updated);
+                ret.put("success", true);
                 ret.put("version", YoutubeDL.getInstance().version(getContext()));
                 call.resolve(ret);
             } catch (Exception e) {
