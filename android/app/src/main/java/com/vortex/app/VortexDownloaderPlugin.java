@@ -7,7 +7,6 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.yausername.youtubedl_android.FFmpeg;
 import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 import com.yausername.youtubedl_android.YoutubeDLResponse;
@@ -27,11 +26,6 @@ public class VortexDownloaderPlugin extends Plugin {
     private synchronized void ensureInitialized() throws YoutubeDLException {
         if (!isInitialized) {
             YoutubeDL.getInstance().init(getContext());
-            try {
-                FFmpeg.getInstance().init(getContext());
-            } catch (Exception fe) {
-                Log.w(TAG, "FFmpeg init warning: " + fe.getMessage());
-            }
             isInitialized = true;
         }
     }
