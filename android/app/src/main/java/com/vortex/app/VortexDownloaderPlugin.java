@@ -97,7 +97,8 @@ public class VortexDownloaderPlugin extends Plugin {
                 request.addOption("--no-mtime");
                 request.addOption("--no-playlist");
                 request.addOption("--restrict-filenames");
-                request.addOption("--extractor-args", "youtube:player_client=android,web");
+                request.addOption("--no-check-certificates");
+                request.addOption("--extractor-args", "youtube:player_client=web,web_embedded;formats=missing_pot");
 
                 if ("audio_mp3".equals(format)) {
                     request.addOption("-x");
