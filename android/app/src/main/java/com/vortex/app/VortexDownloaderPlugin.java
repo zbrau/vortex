@@ -7,6 +7,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.yausername.youtubedl_android.UpdateChannel;
 import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 import com.yausername.youtubedl_android.YoutubeDLResponse;
@@ -98,10 +99,12 @@ public class VortexDownloaderPlugin extends Plugin {
                 request.addOption("--no-playlist");
                 request.addOption("--restrict-filenames");
                 request.addOption("--no-check-certificates");
-                request.addOption("--extractor-args", "youtube:player_client=web,web_embedded;formats=missing_pot");
+                request.addOption("--no-update");
+                request.addOption("--extractor-args", "youtube:player_client=web_safari,tv;formats=missing_pot");
 
                 if ("audio_mp3".equals(format)) {
                     request.addOption("-x");
+                    request.addOption("-f", "bestaudio/best");
                     request.addOption("--audio-format", "mp3");
                     request.addOption("--audio-quality", "0");
                 } else if ("video_1080p".equals(format)) {
@@ -167,9 +170,21 @@ public class VortexDownloaderPlugin extends Plugin {
 
     @PluginMethod
     public void updateEngine(PluginCall call) {
-        JSObject ret = new JSObject();
-        ret.put("success", true);
-        ret.put("status", "READY");
-        call.resolve(ret);
+        executor.execute(() -> {
+            try {
+                ensureInitialized();
+                YoutubeDL.getInstance().updateYoutubeDL(getContext(), UpdateChannel.STABLE);
+                JSObject ret = new JSObject();
+                ret.put("success", true);
+                ret.put("version", YoutubeDL.getInstance().version(getContext()));
+                call.resolve(ret);
+            } catch (Exception e) {
+                Log.w(TAG, "Update engine warning: " + e.getMessage());
+                JSObject ret = new JSObject();
+                ret.put("success", false);
+                ret.put("error", e.getMessage());
+                call.resolve(ret);
+            }
+        });
     }
 }
