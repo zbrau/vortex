@@ -27,6 +27,8 @@ export const translations = {
     'nav.qrShare': 'Transferencia QR a Celular',
     'nav.maintenance': 'Mantenimiento y Respaldo',
     'nav.settings': 'Ajustes y Temas Visuales',
+    'nav.shareShort': 'Compartir',
+    'nav.settingsShort': 'Ajustes',
     'nav.language': 'Seleccionar Idioma',
 
     // Download Bar
@@ -165,6 +167,8 @@ export const translations = {
     'nav.qrShare': 'QR Mobile Transfer',
     'nav.maintenance': 'Maintenance & Backup',
     'nav.settings': 'Settings & Visual Themes',
+    'nav.shareShort': 'Share',
+    'nav.settingsShort': 'Settings',
     'nav.language': 'Select Language',
 
     // Download Bar
@@ -303,6 +307,8 @@ export const translations = {
     'nav.qrShare': 'Transferência QR para Celular',
     'nav.maintenance': 'Manutenção e Backup',
     'nav.settings': 'Configurações e Temas Visuais',
+    'nav.shareShort': 'Compartilhar',
+    'nav.settingsShort': 'Ajustes',
     'nav.language': 'Selecionar Idioma',
 
     // Download Bar
@@ -441,6 +447,8 @@ export const translations = {
     'nav.qrShare': '移动端扫码互传',
     'nav.maintenance': '维护与备份',
     'nav.settings': '设置与视觉主题',
+    'nav.shareShort': '分享',
+    'nav.settingsShort': '设置',
     'nav.language': '切换语言',
 
     // Download Bar

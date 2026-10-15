@@ -318,17 +318,24 @@ export const App: React.FC = () => {
               left: 0,
               right: 0,
               zIndex: 90,
-              background: 'rgba(10, 8, 16, 0.94)',
+              background: 'rgba(10, 8, 16, 0.96)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               borderTop: '1px solid rgba(255,255,255,0.08)',
               paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)',
-              paddingTop: 8,
-              paddingLeft: 8,
-              paddingRight: 8
+              paddingTop: 6,
+              paddingLeft: 4,
+              paddingRight: 4
             }}
           >
-            <Group justify="space-around" align="center" wrap="nowrap">
+            <Box
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                alignItems: 'center',
+                width: '100%'
+              }}
+            >
               {/* 1. Descargas */}
               <UnstyledButton
                 onClick={() => setActiveTab('download')}
@@ -336,17 +343,41 @@ export const App: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 4,
-                  padding: '6px 12px',
-                  borderRadius: 12,
-                  color: activeTab === 'download' ? '#ff2a85' : 'rgba(255,255,255,0.5)',
-                  background: activeTab === 'download' ? 'rgba(255,42,133,0.12)' : 'transparent',
-                  transition: 'all 0.2s ease',
-                  minWidth: 64
+                  justifyContent: 'center',
+                  gap: 3,
+                  padding: '4px 0',
+                  width: '100%',
+                  userSelect: 'none'
                 }}
               >
-                <Download size={21} strokeWidth={activeTab === 'download' ? 2.5 : 2} />
-                <Text size="11px" fw={activeTab === 'download' ? 700 : 500}>
+                <Box
+                  style={{
+                    width: 48,
+                    height: 28,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 14,
+                    background: activeTab === 'download' ? 'rgba(255,42,133,0.18)' : 'transparent',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <Download
+                    size={20}
+                    strokeWidth={activeTab === 'download' ? 2.5 : 2}
+                    color={activeTab === 'download' ? '#ff2a85' : 'rgba(255,255,255,0.5)'}
+                  />
+                </Box>
+                <Text
+                  size="11px"
+                  fw={activeTab === 'download' ? 700 : 500}
+                  style={{
+                    color: activeTab === 'download' ? '#fff' : 'rgba(255,255,255,0.5)',
+                    whiteSpace: 'nowrap',
+                    textAlign: 'center',
+                    lineHeight: 1
+                  }}
+                >
                   {t('nav.download')}
                 </Text>
               </UnstyledButton>
@@ -358,18 +389,31 @@ export const App: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 4,
-                  padding: '6px 12px',
-                  borderRadius: 12,
-                  color: activeTab === 'library' ? '#00e5ff' : 'rgba(255,255,255,0.5)',
-                  background: activeTab === 'library' ? 'rgba(0,229,255,0.12)' : 'transparent',
-                  transition: 'all 0.2s ease',
-                  minWidth: 64,
-                  position: 'relative'
+                  justifyContent: 'center',
+                  gap: 3,
+                  padding: '4px 0',
+                  width: '100%',
+                  userSelect: 'none'
                 }}
               >
-                <Box style={{ position: 'relative' }}>
-                  <Library size={21} strokeWidth={activeTab === 'library' ? 2.5 : 2} />
+                <Box
+                  style={{
+                    width: 48,
+                    height: 28,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 14,
+                    background: activeTab === 'library' ? 'rgba(0,229,255,0.18)' : 'transparent',
+                    transition: 'all 0.2s ease',
+                    position: 'relative'
+                  }}
+                >
+                  <Library
+                    size={20}
+                    strokeWidth={activeTab === 'library' ? 2.5 : 2}
+                    color={activeTab === 'library' ? '#00e5ff' : 'rgba(255,255,255,0.5)'}
+                  />
                   {libraryItems.length > 0 && (
                     <Badge
                       size="xs"
@@ -377,41 +421,72 @@ export const App: React.FC = () => {
                       color="pink"
                       style={{
                         position: 'absolute',
-                        top: -6,
-                        right: -10,
+                        top: -4,
+                        right: 4,
                         fontSize: 9,
                         fontWeight: 800,
                         minWidth: 16,
-                        height: 16
+                        height: 16,
+                        lineHeight: '16px'
                       }}
                     >
                       {libraryItems.length}
                     </Badge>
                   )}
                 </Box>
-                <Text size="11px" fw={activeTab === 'library' ? 700 : 500}>
+                <Text
+                  size="11px"
+                  fw={activeTab === 'library' ? 700 : 500}
+                  style={{
+                    color: activeTab === 'library' ? '#fff' : 'rgba(255,255,255,0.5)',
+                    whiteSpace: 'nowrap',
+                    textAlign: 'center',
+                    lineHeight: 1
+                  }}
+                >
                   {t('nav.library')}
                 </Text>
               </UnstyledButton>
 
-              {/* 3. Transferir QR */}
+              {/* 3. Compartir QR */}
               <UnstyledButton
                 onClick={() => setQrShareOpened(true)}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 4,
-                  padding: '6px 12px',
-                  borderRadius: 12,
-                  color: 'rgba(255,255,255,0.55)',
-                  transition: 'all 0.2s ease',
-                  minWidth: 64
+                  justifyContent: 'center',
+                  gap: 3,
+                  padding: '4px 0',
+                  width: '100%',
+                  userSelect: 'none'
                 }}
               >
-                <QrCode size={21} strokeWidth={2} />
-                <Text size="11px" fw={500}>
-                  QR Share
+                <Box
+                  style={{
+                    width: 48,
+                    height: 28,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 14,
+                    background: 'transparent',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <QrCode size={20} strokeWidth={2} color="rgba(255,255,255,0.55)" />
+                </Box>
+                <Text
+                  size="11px"
+                  fw={500}
+                  style={{
+                    color: 'rgba(255,255,255,0.55)',
+                    whiteSpace: 'nowrap',
+                    textAlign: 'center',
+                    lineHeight: 1
+                  }}
+                >
+                  {t('nav.shareShort')}
                 </Text>
               </UnstyledButton>
 
@@ -422,20 +497,41 @@ export const App: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 4,
-                  padding: '6px 12px',
-                  borderRadius: 12,
-                  color: 'rgba(255,255,255,0.55)',
-                  transition: 'all 0.2s ease',
-                  minWidth: 64
+                  justifyContent: 'center',
+                  gap: 3,
+                  padding: '4px 0',
+                  width: '100%',
+                  userSelect: 'none'
                 }}
               >
-                <Settings size={21} strokeWidth={2} />
-                <Text size="11px" fw={500}>
-                  {t('nav.settings')}
+                <Box
+                  style={{
+                    width: 48,
+                    height: 28,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 14,
+                    background: 'transparent',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <Settings size={20} strokeWidth={2} color="rgba(255,255,255,0.55)" />
+                </Box>
+                <Text
+                  size="11px"
+                  fw={500}
+                  style={{
+                    color: 'rgba(255,255,255,0.55)',
+                    whiteSpace: 'nowrap',
+                    textAlign: 'center',
+                    lineHeight: 1
+                  }}
+                >
+                  {t('nav.settingsShort')}
                 </Text>
               </UnstyledButton>
-            </Group>
+            </Box>
           </Paper>
         )}
 
