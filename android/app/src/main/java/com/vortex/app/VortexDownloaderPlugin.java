@@ -11,6 +11,7 @@ import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 import com.yausername.youtubedl_android.YoutubeDLResponse;
 import com.yausername.youtubedl_android.YoutubeDLException;
+import com.yausername.youtubedl_android.mapper.VideoInfo;
 import kotlin.Unit;
 
 import java.io.File;
@@ -149,6 +150,7 @@ public class VortexDownloaderPlugin extends Plugin {
                 }
 
                 File finalFolder = vortexFolder;
+                long downloadStartTime = System.currentTimeMillis() - 2000;
                 YoutubeDLResponse response = YoutubeDL.getInstance().execute(request, id, (progress, etaInSeconds, line) -> {
                     JSObject progressData = new JSObject();
                     progressData.put("id", id);
@@ -159,12 +161,38 @@ public class VortexDownloaderPlugin extends Plugin {
                     return Unit.INSTANCE;
                 });
 
+                File downloadedFile = null;
+                File[] files = finalFolder.listFiles();
+                if (files != null && files.length > 0) {
+                    long latestTime = 0;
+                    for (File f : files) {
+                        if (f.isFile() && f.lastModified() >= downloadStartTime && f.lastModified() > latestTime) {
+                            latestTime = f.lastModified();
+                            downloadedFile = f;
+                        }
+                    }
+                    if (downloadedFile == null) {
+                        for (File f : files) {
+                            if (f.isFile() && f.lastModified() > latestTime) {
+                                latestTime = f.lastModified();
+                                downloadedFile = f;
+                            }
+                        }
+                    }
+                }
+
+                String actualFilePath = downloadedFile != null ? downloadedFile.getAbsolutePath() : finalFolder.getAbsolutePath();
+                String actualFileName = downloadedFile != null ? downloadedFile.getName() : "Vortex_Download_" + id;
+                long actualFileSize = downloadedFile != null ? downloadedFile.length() : 0;
+                String actualTitle = downloadedFile != null ? downloadedFile.getName().replaceFirst("[.][^.]+$", "") : "";
+
                 try {
+                    String mimeType = "audio_mp3".equals(format) ? "audio/mpeg" : "video/mp4";
                     android.media.MediaScannerConnection.scanFile(
                         getContext(),
-                        new String[]{ finalFolder.getAbsolutePath() },
-                        null,
-                        null
+                        new String[]{ actualFilePath },
+                        new String[]{ mimeType },
+                        (path, uri) -> Log.i(TAG, "MediaScanner indexed: " + path + " -> " + uri)
                     );
                 } catch (Exception ignored) {}
 
@@ -172,13 +200,18 @@ public class VortexDownloaderPlugin extends Plugin {
                 finishData.put("id", id);
                 finishData.put("status", "completed");
                 finishData.put("percent", 100.0);
-                finishData.put("path", finalFolder.getAbsolutePath());
+                finishData.put("path", actualFilePath);
+                finishData.put("filename", actualFileName);
+                finishData.put("filesize", actualFileSize);
+                finishData.put("title", actualTitle);
                 finishData.put("output", response.getOut());
                 notifyListeners("onProgress", finishData);
 
                 JSObject result = new JSObject();
                 result.put("success", true);
                 result.put("id", id);
+                result.put("filePath", actualFilePath);
+                result.put("filename", actualFileName);
                 result.put("downloadDir", finalFolder.getAbsolutePath());
                 call.resolve(result);
 
@@ -215,6 +248,37 @@ public class VortexDownloaderPlugin extends Plugin {
                 ret.put("success", false);
                 ret.put("error", e.getMessage());
                 call.resolve(ret);
+            }
+        });
+    }
+
+    @PluginMethod
+    public void fetchMetadata(PluginCall call) {
+        String url = call.getString("url");
+        if (url == null || url.trim().isEmpty()) {
+            call.reject("URL cannot be empty");
+            return;
+        }
+
+        executor.execute(() -> {
+            try {
+                ensureInitialized();
+                YoutubeDLRequest request = new YoutubeDLRequest(url.trim());
+                request.addOption("--no-playlist");
+                request.addOption("--no-check-certificates");
+                request.addOption("--extractor-args", "youtube:player-client=visionos,tv_samsung,android_vr,web;formats=missing_pot");
+                VideoInfo info = YoutubeDL.getInstance().getInfo(request);
+
+                JSObject ret = new JSObject();
+                ret.put("title", info.getTitle());
+                ret.put("uploader", info.getUploader());
+                ret.put("duration", info.getDuration());
+                ret.put("thumbnail", info.getThumbnail());
+                ret.put("url", url);
+                call.resolve(ret);
+            } catch (Exception e) {
+                Log.w(TAG, "fetchMetadata error: " + e.getMessage());
+                call.reject("Failed to fetch metadata: " + e.getMessage());
             }
         });
     }

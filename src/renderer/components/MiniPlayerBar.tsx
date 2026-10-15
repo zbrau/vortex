@@ -28,6 +28,7 @@ import { DownloadItem } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useMediaQuery } from '@mantine/hooks';
 import { getVortexApi, isMobileNative } from '../api';
+import { Capacitor } from '@capacitor/core';
 
 interface MiniPlayerBarProps {
   item: DownloadItem | null;
@@ -66,10 +67,12 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
 
   const isVideo = ['mp4', 'mkv', 'webm', 'mov'].includes(item.format.toLowerCase());
 
-  const streamSrc = item.id
+  const streamSrc = isMobileNative && item.filepath
+    ? Capacitor.convertFileSrc(item.filepath)
+    : item.id && !isMobileNative
     ? `http://127.0.0.1:6767/api/stream/${encodeURIComponent(item.id)}`
     : item.filepath
-    ? `http://127.0.0.1:6767/api/stream-file?path=${encodeURIComponent(item.filepath)}`
+    ? (isMobileNative ? Capacitor.convertFileSrc(item.filepath) : `http://127.0.0.1:6767/api/stream-file?path=${encodeURIComponent(item.filepath)}`)
     : '';
 
   const togglePlay = () => {

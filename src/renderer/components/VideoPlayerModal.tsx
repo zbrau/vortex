@@ -27,6 +27,7 @@ import { DownloadItem, PointOfInterest, SubtitleTrack } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useMediaQuery } from '@mantine/hooks';
 import { getVortexApi, isMobileNative } from '../api';
+import { Capacitor } from '@capacitor/core';
 
 interface VideoPlayerModalProps {
   item: DownloadItem | null;
@@ -96,11 +97,13 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ item, onClos
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  // Safe HTTP 206 streamable URL through internal streaming server
-  const videoSrc = item.id
+  // Safe HTTP 206 streamable URL through internal streaming server or Capacitor local file URL
+  const videoSrc = isMobileNative && item.filepath
+    ? Capacitor.convertFileSrc(item.filepath)
+    : item.id && !isMobileNative
     ? `http://127.0.0.1:6767/api/stream/${encodeURIComponent(item.id)}`
     : item.filepath
-    ? `http://127.0.0.1:6767/api/stream-file?path=${encodeURIComponent(item.filepath)}`
+    ? (isMobileNative ? Capacitor.convertFileSrc(item.filepath) : `http://127.0.0.1:6767/api/stream-file?path=${encodeURIComponent(item.filepath)}`)
     : '';
 
   return (

@@ -98,6 +98,53 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
     else setDetectedPlatform(null);
   }, [url]);
 
+  // Debounced auto-fetch metadata whenever url changes
+  useEffect(() => {
+    const trimmed = url.trim();
+    if (!trimmed || !trimmed.startsWith('http')) {
+      setMetadata(null);
+      return;
+    }
+
+    // Immediate YouTube preview thumbnail if available (<0ms)
+    const ytMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/);
+    if (ytMatch && ytMatch[1]) {
+      const vidId = ytMatch[1];
+      setMetadata(prev => (prev && prev.url === trimmed ? prev : {
+        id: 'yt_' + vidId,
+        title: 'Cargando información del video...',
+        url: trimmed,
+        duration: 0,
+        thumbnail: `https://i.ytimg.com/vi/${vidId}/hqdefault.jpg`,
+        uploader: 'YouTube',
+        formats: []
+      }));
+    }
+
+    let active = true;
+    const timer = setTimeout(async () => {
+      setLoadingMeta(true);
+      try {
+        const api = getVortexApi();
+        if (api?.fetchMetadata) {
+          const meta = await api.fetchMetadata(trimmed);
+          if (active && meta) {
+            setMetadata(meta);
+          }
+        }
+      } catch (err) {
+        console.error('Metadata lookup error:', err);
+      } finally {
+        if (active) setLoadingMeta(false);
+      }
+    }, 200);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [url]);
+
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -106,27 +153,10 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           setBatchUrls(prev => (prev ? `${prev}\n${text}` : text));
         } else {
           setUrl(text);
-          inspectUrl(text);
         }
       }
     } catch (e) {
       console.error(e);
-    }
-  };
-
-  const inspectUrl = async (targetUrl: string) => {
-    if (!targetUrl.startsWith('http')) return;
-    setLoadingMeta(true);
-    try {
-      const api = getVortexApi();
-      if (api?.fetchMetadata) {
-        const meta = await api.fetchMetadata(targetUrl);
-        setMetadata(meta);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingMeta(false);
     }
   };
 
@@ -285,12 +315,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                     )
                   }
                   value={url}
-                  onChange={e => {
-                    setUrl(e.target.value);
-                    if (e.target.value.includes('http') && !metadata) {
-                      inspectUrl(e.target.value);
-                    }
-                  }}
+                  onChange={e => setUrl(e.target.value)}
                   size="md"
                   radius="md"
                   rightSection={
@@ -335,12 +360,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                     )
                   }
                   value={url}
-                  onChange={e => {
-                    setUrl(e.target.value);
-                    if (e.target.value.includes('http') && !metadata) {
-                      inspectUrl(e.target.value);
-                    }
-                  }}
+                  onChange={e => setUrl(e.target.value)}
                   style={{ flex: 1 }}
                   size="md"
                   radius="md"
@@ -403,7 +423,7 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
           )}
 
           {/* Quick Metadata Preview Card */}
-          {loadingMeta && (
+          {loadingMeta && !metadata && (
             <Text size="sm" c="dimmed">
               {t('download.fetchingMeta')}
             </Text>
@@ -420,8 +440,10 @@ export const DownloadBar: React.FC<DownloadBarProps> = ({
                     {metadata.title}
                   </Text>
                   <Group gap="xs" mt={4} wrap="nowrap">
-                    <Badge size="xs" color="gray">{metadata.uploader}</Badge>
-                    <Badge size="xs" color="dark">{Math.round(metadata.duration / 60)} min</Badge>
+                    {metadata.uploader && <Badge size="xs" color="gray">{metadata.uploader}</Badge>}
+                    {metadata.duration > 0 && (
+                      <Badge size="xs" color="dark">{Math.round(metadata.duration / 60)} min</Badge>
+                    )}
                     {metadata.chapters && metadata.chapters.length > 0 && (
                       <Badge size="xs" color="pink" variant="light">
                         {metadata.chapters.length} Caps

@@ -9,6 +9,21 @@ const getNativeDownloader = () => {
   return (Capacitor as any).Plugins?.VortexDownloader;
 };
 
+// Metadata cache for instant UI rendering
+const metadataCache = new Map<string, any>();
+
+// Library update event listeners for mobile reactivity
+const libraryListeners = new Set<() => void>();
+const notifyLibraryUpdated = () => {
+  libraryListeners.forEach(cb => {
+    try {
+      cb();
+    } catch (e) {
+      console.error('Error invoking library listener:', e);
+    }
+  });
+};
+
 // Fallback in-memory/localStorage for mobile library
 const getMobileLibrary = (): DownloadItem[] => {
   try {
@@ -22,6 +37,7 @@ const getMobileLibrary = (): DownloadItem[] => {
 const saveMobileLibrary = (items: DownloadItem[]) => {
   try {
     localStorage.setItem('vortex_mobile_library', JSON.stringify(items));
+    notifyLibraryUpdated();
   } catch (e) {
     console.error('Error saving mobile library:', e);
   }
@@ -70,6 +86,54 @@ export const getVortexApi = () => {
       onBootstrapProgress: () => () => {},
 
       fetchMetadata: async (url: string) => {
+        if (!url || !url.startsWith('http')) return null;
+
+        // 1. YouTube instant oEmbed (<100ms)
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          try {
+            const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+            const res = await fetch(oembedUrl);
+            if (res.ok) {
+              const data = await res.json();
+              const meta = {
+                id: 'meta_' + Date.now(),
+                title: data.title || 'Video de YouTube',
+                url,
+                duration: 0,
+                thumbnail: data.thumbnail_url || '',
+                uploader: data.author_name || 'YouTube',
+                formats: []
+              };
+              metadataCache.set(url, meta);
+              return meta;
+            }
+          } catch (e) {
+            console.warn('oEmbed lookup failed, falling back to plugin:', e);
+          }
+        }
+
+        // 2. Native plugin extraction for other platforms or fallback
+        if (nativePlugin?.fetchMetadata) {
+          try {
+            const res = await nativePlugin.fetchMetadata({ url });
+            if (res?.title) {
+              const meta = {
+                id: 'meta_' + Date.now(),
+                title: res.title,
+                url,
+                duration: res.duration || 0,
+                thumbnail: res.thumbnail || '',
+                uploader: res.uploader || 'Vortex',
+                formats: []
+              };
+              metadataCache.set(url, meta);
+              return meta;
+            }
+          } catch (e) {
+            console.warn('Native metadata extraction failed:', e);
+          }
+        }
+
         return {
           id: 'meta_' + Date.now(),
           title: 'Descarga Multimedia',
@@ -84,22 +148,23 @@ export const getVortexApi = () => {
       startDownload: async (options: DownloadOptions) => {
         const id = 'dl_' + Date.now();
         const format = options.mediaType === 'audio' ? 'audio_mp3' : (options.formatPreset || 'video_best');
+        const cachedMeta = metadataCache.get(options.url);
 
         // Add to mobile library with downloading status
         const current = getMobileLibrary();
         const newItem: DownloadItem = {
           id,
           url: options.url,
-          title: options.url.split('/').pop() || 'Archivo Vortex',
+          title: cachedMeta?.title || options.url.split('/').pop() || 'Archivo Vortex',
           filepath: '',
           filename: 'Vortex_Download_' + id,
           filesize: 0,
-          duration: 0,
+          duration: cachedMeta?.duration || 0,
           resolution: options.videoResolution || '1080p',
           format: format,
           status: 'downloading',
           category_id: options.categoryId,
-          thumbnail_url: '',
+          thumbnail_url: cachedMeta?.thumbnail || '',
           download_date: new Date().toISOString()
         };
         saveMobileLibrary([newItem, ...current]);
@@ -169,7 +234,10 @@ export const getVortexApi = () => {
                   return {
                     ...item,
                     status: data.status,
-                    filepath: data.path || item.filepath
+                    filepath: data.path || item.filepath,
+                    filename: data.filename || item.filename,
+                    filesize: data.filesize || item.filesize,
+                    title: (data.title && data.title.trim().length > 0) ? data.title : item.title
                   };
                 }
                 return item;
@@ -195,8 +263,11 @@ export const getVortexApi = () => {
         return () => {};
       },
 
-      onLibraryUpdated: (_callback: () => void) => {
-        return () => {};
+      onLibraryUpdated: (callback: () => void) => {
+        libraryListeners.add(callback);
+        return () => {
+          libraryListeners.delete(callback);
+        };
       }
     };
   }
