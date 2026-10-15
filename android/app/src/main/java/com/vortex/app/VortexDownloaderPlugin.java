@@ -7,6 +7,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.yausername.youtubedl_android.FFmpeg;
 import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
 import com.yausername.youtubedl_android.YoutubeDLResponse;
@@ -23,21 +24,30 @@ public class VortexDownloaderPlugin extends Plugin {
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private boolean isInitialized = false;
 
+    private synchronized void ensureInitialized() throws YoutubeDLException {
+        if (!isInitialized) {
+            YoutubeDL.getInstance().init(getContext());
+            try {
+                FFmpeg.getInstance().init(getContext());
+            } catch (Exception fe) {
+                Log.w(TAG, "FFmpeg init warning: " + fe.getMessage());
+            }
+            isInitialized = true;
+        }
+    }
+
     @PluginMethod
     public void initEngine(PluginCall call) {
         executor.execute(() -> {
             try {
-                if (!isInitialized) {
-                    YoutubeDL.getInstance().init(getContext());
-                    isInitialized = true;
-                }
+                ensureInitialized();
                 JSObject ret = new JSObject();
                 ret.put("success", true);
                 ret.put("version", YoutubeDL.getInstance().version(getContext()));
                 call.resolve(ret);
             } catch (Exception e) {
                 Log.e(TAG, "Failed to initialize YoutubeDL engine", e);
-                call.reject("Initialization error: " + e.getMessage());
+                call.reject("Initialization error: " + (e.getMessage() != null ? e.getMessage() : e.toString()));
             }
         });
     }
@@ -60,27 +70,40 @@ public class VortexDownloaderPlugin extends Plugin {
         String format = call.getString("format", "video_best");
         String id = call.getString("id", String.valueOf(System.currentTimeMillis()));
 
-        if (url == null || url.isEmpty()) {
+        if (url == null || url.trim().isEmpty()) {
             call.reject("URL cannot be empty");
             return;
         }
 
         executor.execute(() -> {
             try {
-                if (!isInitialized) {
-                    YoutubeDL.getInstance().init(getContext());
-                    isInitialized = true;
+                ensureInitialized();
+
+                File vortexFolder = null;
+                try {
+                    File publicDownloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    File publicVortex = new File(publicDownloadDir, "Vortex");
+                    if (publicVortex.exists() || publicVortex.mkdirs()) {
+                        if (publicVortex.canWrite()) {
+                            vortexFolder = publicVortex;
+                        }
+                    }
+                } catch (Exception ignored) {}
+
+                if (vortexFolder == null) {
+                    File appExtDir = getContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                    vortexFolder = new File(appExtDir != null ? appExtDir : getContext().getFilesDir(), "Vortex");
+                    if (!vortexFolder.exists()) {
+                        vortexFolder.mkdirs();
+                    }
                 }
 
-                File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                File vortexFolder = new File(downloadDir, "Vortex");
-                if (!vortexFolder.exists()) {
-                    vortexFolder.mkdirs();
-                }
-
-                YoutubeDLRequest request = new YoutubeDLRequest(url);
+                YoutubeDLRequest request = new YoutubeDLRequest(url.trim());
                 request.addOption("-o", vortexFolder.getAbsolutePath() + "/%(title)s.%(ext)s");
                 request.addOption("--no-mtime");
+                request.addOption("--no-playlist");
+                request.addOption("--restrict-filenames");
+                request.addOption("--extractor-args", "youtube:player_client=android,web");
 
                 if ("audio_mp3".equals(format)) {
                     request.addOption("-x");
@@ -93,10 +116,11 @@ public class VortexDownloaderPlugin extends Plugin {
                     request.addOption("-f", "bestvideo[height<=2160]+bestaudio/best");
                     request.addOption("--merge-output-format", "mp4");
                 } else {
-                    request.addOption("-f", "bestvideo+bestaudio/best");
+                    request.addOption("-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best");
                     request.addOption("--merge-output-format", "mp4");
                 }
 
+                File finalFolder = vortexFolder;
                 YoutubeDLResponse response = YoutubeDL.getInstance().execute(request, id, (progress, etaInSeconds, line) -> {
                     JSObject progressData = new JSObject();
                     progressData.put("id", id);
@@ -107,37 +131,59 @@ public class VortexDownloaderPlugin extends Plugin {
                     return Unit.INSTANCE;
                 });
 
+                try {
+                    android.media.MediaScannerConnection.scanFile(
+                        getContext(),
+                        new String[]{ finalFolder.getAbsolutePath() },
+                        null,
+                        null
+                    );
+                } catch (Exception ignored) {}
+
                 JSObject finishData = new JSObject();
                 finishData.put("id", id);
                 finishData.put("status", "completed");
                 finishData.put("percent", 100.0);
-                finishData.put("path", vortexFolder.getAbsolutePath());
+                finishData.put("path", finalFolder.getAbsolutePath());
                 finishData.put("output", response.getOut());
                 notifyListeners("onProgress", finishData);
 
                 JSObject result = new JSObject();
                 result.put("success", true);
                 result.put("id", id);
-                result.put("downloadDir", vortexFolder.getAbsolutePath());
+                result.put("downloadDir", finalFolder.getAbsolutePath());
                 call.resolve(result);
 
             } catch (Exception e) {
                 Log.e(TAG, "Download error for URL: " + url, e);
+                String errorMsg = e.getMessage();
+                if (errorMsg == null || errorMsg.trim().isEmpty()) {
+                    errorMsg = e.toString();
+                }
                 JSObject errorData = new JSObject();
                 errorData.put("id", id);
                 errorData.put("status", "error");
-                errorData.put("error", e.getMessage());
+                errorData.put("error", errorMsg);
                 notifyListeners("onProgress", errorData);
-                call.reject("Download failed: " + e.getMessage());
+                call.reject("Download failed: " + errorMsg);
             }
         });
     }
 
     @PluginMethod
     public void updateEngine(PluginCall call) {
-        JSObject ret = new JSObject();
-        ret.put("success", true);
-        ret.put("status", "READY");
-        call.resolve(ret);
+        executor.execute(() -> {
+            try {
+                ensureInitialized();
+                YoutubeDL.getInstance().updateYoutubeDL(getContext(), YoutubeDL.UpdateChannel.STABLE);
+                JSObject ret = new JSObject();
+                ret.put("success", true);
+                ret.put("version", YoutubeDL.getInstance().version(getContext()));
+                call.resolve(ret);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to update YoutubeDL engine", e);
+                call.reject("Update error: " + (e.getMessage() != null ? e.getMessage() : e.toString()));
+            }
+        });
     }
 }

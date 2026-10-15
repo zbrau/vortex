@@ -84,32 +84,38 @@ export const getVortexApi = () => {
       startDownload: async (options: DownloadOptions) => {
         const id = 'dl_' + Date.now();
         const format = options.mediaType === 'audio' ? 'audio_mp3' : (options.formatPreset || 'video_best');
-        if (nativePlugin) {
-          await nativePlugin.startDownload({
-            url: options.url,
-            format,
-            id
-          });
-        }
 
-        // Add to mobile library
+        // Add to mobile library with downloading status
         const current = getMobileLibrary();
         const newItem: DownloadItem = {
           id,
           url: options.url,
           title: options.url.split('/').pop() || 'Archivo Vortex',
-          filepath: '/storage/emulated/0/Download/Vortex',
+          filepath: '',
           filename: 'Vortex_Download_' + id,
           filesize: 0,
           duration: 0,
           resolution: options.videoResolution || '1080p',
           format: format,
-          status: 'completed',
+          status: 'downloading',
           category_id: options.categoryId,
           thumbnail_url: '',
           download_date: new Date().toISOString()
         };
         saveMobileLibrary([newItem, ...current]);
+
+        if (nativePlugin) {
+          try {
+            await nativePlugin.startDownload({
+              url: options.url,
+              format,
+              id
+            });
+          } catch (e: any) {
+            console.error('Plugin startDownload error:', e);
+          }
+        }
+
         return { success: true, id };
       },
 
@@ -156,14 +162,30 @@ export const getVortexApi = () => {
       onProgress: (callback: (progress: DownloadProgress) => void) => {
         if (nativePlugin) {
           const listener = nativePlugin.addListener('onProgress', (data: any) => {
+            if (data.status === 'completed' || data.status === 'error') {
+              const current = getMobileLibrary();
+              const updated = current.map(item => {
+                if (item.id === data.id) {
+                  return {
+                    ...item,
+                    status: data.status,
+                    filepath: data.path || item.filepath
+                  };
+                }
+                return item;
+              });
+              saveMobileLibrary(updated);
+            }
+
             callback({
               id: data.id,
               status: data.status,
               percent: data.percent,
-              speed: '',
-              totalSize: '',
+              speed: data.speed || '',
+              totalSize: data.totalSize || '',
               eta: data.eta || '',
-              downloadedSize: ''
+              downloadedSize: '',
+              error: data.error
             });
           });
           return () => {
