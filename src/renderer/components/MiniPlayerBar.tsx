@@ -141,17 +141,21 @@ export const MiniPlayerBar: React.FC<MiniPlayerBarProps> = ({
     <Box
       style={{
         position: 'fixed',
-        bottom: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 58px)' : 0,
-        left: 0,
-        right: 0,
+        bottom: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 78px)' : 0,
+        left: isMobile ? 12 : 0,
+        right: isMobile ? 12 : 0,
+        maxWidth: isMobile ? 440 : 'none',
+        margin: isMobile ? '0 auto' : undefined,
+        borderRadius: isMobile ? 16 : 0,
         zIndex: 89,
         padding: isMobile ? '6px 12px' : '8px 16px',
         background: 'rgba(12, 10, 20, 0.95)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         transform: 'translateZ(0)',
-        borderTop: `1px solid ${accentColor}40`,
-        boxShadow: `0 -10px 40px rgba(0,0,0,0.6)`,
+        border: isMobile ? `1px solid ${accentColor}50` : undefined,
+        borderTop: isMobile ? undefined : `1px solid ${accentColor}40`,
+        boxShadow: isMobile ? '0 12px 32px rgba(0,0,0,0.7)' : '0 -10px 40px rgba(0,0,0,0.6)',
         animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
       }}
     >

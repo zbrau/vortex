@@ -257,7 +257,7 @@ export const App: React.FC = () => {
           background: `radial-gradient(ellipse 70% 35% at 50% -5%, ${effectiveAccent}18, transparent 70%), ${activeThemeConfig.bg}`,
           minHeight: '100vh',
           color: '#fff',
-          paddingBottom: isMobile ? (miniPlayerItem ? 150 : 80) : (miniPlayerItem ? 85 : 0)
+          paddingBottom: isMobile ? (miniPlayerItem ? 165 : 95) : (miniPlayerItem ? 85 : 0)
         }}
       >
         <Navbar
@@ -314,18 +314,19 @@ export const App: React.FC = () => {
             component="nav"
             style={{
               position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+              left: 14,
+              right: 14,
+              maxWidth: 420,
+              margin: '0 auto',
               zIndex: 90,
-              background: 'rgba(10, 8, 16, 0.96)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              borderTop: '1px solid rgba(255,255,255,0.08)',
-              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)',
-              paddingTop: 6,
-              paddingLeft: 4,
-              paddingRight: 4
+              background: 'rgba(14, 12, 24, 0.88)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderRadius: 24,
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              boxShadow: '0 16px 36px -4px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05), 0 6px 20px rgba(0, 229, 255, 0.06)',
+              padding: '6px 8px'
             }}
           >
             <Box
