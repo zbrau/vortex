@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-apk:
     name: Build Vortex Standalone APK
@@ -55,7 +58,7 @@ jobs:
             exit 1
           fi
           mkdir -p ../dist-apk
-          find . -name "*.apk" -exec cp -v {} ../dist-apk/ \;
+          find . -name "*.apk" -exec cp -v {} ../dist-apk/vortex.apk \;
           ls -la ../dist-apk/
 
       - name: Upload APK Artifact
@@ -64,6 +67,20 @@ jobs:
           name: Vortex-Android-APK
           path: dist-apk/
           if-no-files-found: warn
+
+      - name: Publish Direct APK Download Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: android-latest
+          name: Vortex Android Preview
+          body: |
+            Descarga directa de APK para Vortex en Android.
+            No requiere iniciar sesion en GitHub.
+          prerelease: true
+          files: dist-apk/vortex.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Build Log
         if: always()
